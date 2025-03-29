@@ -17,10 +17,10 @@
       </p>
       <div class="flex gap-4">
         <button
-          class="px-6 py-4 text-2xl flex items-center gap-2 ring-offset-background focus-visible:ring-ring justify-center whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 bg-secondary/30 hover:bg-secondary/40 group"
+          class="transition-all hover:bg-black/80 justify-between w-52 scale-100 duration-300 ease-in-out px-6 py-4 text-2xl flex items-center gap-2 ring-offset-background focus-visible:ring-ring whitespace-nowrap rounded-md font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 bg-black group text-yellow-400"
         >
           Play Now
-          <MoveRight class="group-hover:translate-x-1 transform ease-in-out" size={40} absoluteStrokeWidth />
+          <MoveRight size={40} absoluteStrokeWidth />
         </button>
       </div>
       <div class="pb-20"></div>
