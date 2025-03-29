@@ -2,27 +2,22 @@
   import { Button } from "$lib/components/ui/button";
   import { Sheet, SheetContent, SheetTrigger } from "$lib/components/ui/sheet";
   import { Menu } from "@lucide/svelte";
-  import { page } from "$app/stores";
+  import { page } from "$app/state";
 
   // Define the navigation items
   const navItems = [
-    { label: "Home", href: "/" },
-    { label: "Play", href: "/play" },
-    { label: "Leaderboard", href: "/leaderboard" },
-    { label: "About", href: "/about" },
+    { label: "", href: "/" },
   ];
 
   // Determine if a nav item is active
-  $: isActive = (href: string) => $page.url.pathname === href;
+  let isActive = $derived((href: string) => page.url.pathname === href);
 
   // Toggle for mobile menu (optional usage)
-  let isMobileMenuOpen = false;
+  let isMobileMenuOpen = $state(false);
 </script>
 
-<header
-  class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
->
-  <div class="container flex h-14 items-center">
+<header class="fixed top-0 z-50 w-full">
+  <div class="container flex h-14 items-center mt-6">
     <!-- Logo -->
     <div class="mr-4 flex">
       <a href="/" class="flex items-center space-x-2">
@@ -49,8 +44,8 @@
 
     <!-- Right Side Actions -->
     <div class="hidden md:flex items-center space-x-2">
-      <Button variant="outline" size="sm" href="/signin">Sign In</Button>
-      <Button size="sm" href="/signup">Sign Up</Button>
+      <Button variant="link" size="sm" href="/signin">Instructions</Button>
+      <Button variant="link" size="sm" href="/signup">Learn More</Button>
     </div>
 
     <!-- Mobile Menu Button -->
