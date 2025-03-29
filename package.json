@@ -1,0 +1,26 @@
+{
+  "name": "largeliarmodel",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "scripts": {
+    "build:api": "bun run --filter=@your-scope/hono-api build",
+    "build:sk": "bun run --filter=@your-scope/sveltekit-app build",
+    "build": "bun run build:api && bun run build:sk",
+    "dev:api": "bun run --filter=@your-scope/hono-api dev",
+    "dev:sk": "bun run --filter=@your-scope/sveltekit-app dev",
+    "dev": "bun run dev:api & bun run dev:sk",
+    "lint": "bun run --parallel lint",
+    "check": "bun run --parallel check"
+  }
+}
