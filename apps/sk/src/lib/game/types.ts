@@ -2,7 +2,7 @@ export enum QuestionType {
     Art = "art",
     Music = "music",
     News = "news",
-    ElectionData = "election_data",
+    StockPhoto = "stock_photo",
     Quote = "quote",
 }
 
@@ -22,13 +22,26 @@ export const createGameConfig = (
     };
 };
 
-export interface QuestionContent {
-    type: "text" | "image" | "audio" | "video" | "data";
-    data: any | TextContent; // This will be specialized based on content type
+export interface QuoteContent {
+    text: string;
 }
 
-export interface TextContent {
-    text: string;
+export interface ArtContent {
+    imageUrl: string;
+}
+
+export interface MusicContent {
+    artist: string;
+    song: string;
+}
+
+export interface NewsContent {
+    headline: string;
+    source: string;
+}
+
+export interface StockPhotoContent {
+    imageData: string;
 }
 
 export enum GameStatus {

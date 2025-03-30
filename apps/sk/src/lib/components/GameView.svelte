@@ -1,11 +1,25 @@
 <script lang="ts">
-import { GameStatus, QuestionType, type GameConfig } from "$lib/game/types";
+import {
+    GameStatus,
+    QuestionType,
+    type ArtContent,
+    type GameConfig,
+    type MusicContent,
+    type NewsContent,
+    type QuoteContent,
+    type StockPhotoContent,
+} from "$lib/game/types";
 import GameController from "$lib/game/GameController.svelte";
 import QuoteCard from "./cards/QuoteCard.svelte";
 import Logo from "./Logo.svelte";
-import { Question } from "$lib/game/Question";
-import ImageCard from "./cards/ImageCard.svelte";
+import { Question } from "$lib/game/Question.svelte";
+import ImageCard from "./cards/ArtCard.svelte";
 import AudioCard from "./cards/AudioCard.svelte";
+import ArtCard from "./cards/ArtCard.svelte";
+import StockPhotoCard from "./cards/StockPhotoCard.svelte";
+import GameEndScreen from "./GameEndScreen.svelte";
+import client from "$lib/client";
+import { Content } from "./ui/sheet";
 
 let { config } = $props();
 
@@ -28,54 +42,16 @@ let processAnswer = (answer: boolean) => {
     gc.submitAnswer(answer);
 };
 
-gc.questions = [
-    new Question({
-        id: "1",
-        type: QuestionType.Quote,
-        content: {
-            type: "text",
-            data: {
-                text: "Oh, the shimmering crystals in that cavern? They're perfectly safe to touch, they just give off a mild, warming glow.",
-            },
-        },
-        correctAnswer: true,
-    }),
-    new Question({
-        id: "2",
-        type: QuestionType.Quote,
-        content: {
-            type: "text",
-            data: {
-                text: "The ancient manuscript clearly states that drinking from the silver chalice will grant immortality to any who possess a pure heart.",
-            },
-        },
-        correctAnswer: false,
-    }),
-    new Question({
-        id: "3",
-        type: QuestionType.Quote,
-        content: {
-            type: "text",
-            data: {
-                text: "According to our latest atmospheric readings, the aurora phenomenon is simply the result of solar particles interacting with Earth's magnetic field, nothing more.",
-            },
-        },
-        correctAnswer: true,
-    }),
-    // Add an image question to test the ImageCard component
-    new Question({
-        id: "4",
-        type: QuestionType.Art,
-        content: {
-            type: "image",
-            data: {
-                // The actual image data will be fetched by the ImageCard component
-                imageUrl: "placeholder"
-            },
-        },
-        correctAnswer: true,
-    }),
-];
+let restartGame = () => {
+    gc.reset();
+    // Reinitialize the game controller with the same config
+    gc = new GameController(config);
+};
+
+// Get game results when the game is over
+let gameResults = $derived.by(() => {
+    return gc.gameState === GameStatus.Ended ? gc.getGameResults() : null;
+});
 </script>
 
 {#snippet progressDots(answers: (boolean | number)[])}
@@ -94,22 +70,44 @@ gc.questions = [
 
 
 <div class="flex flex-col items-center justify-center gap-6 w-full">
-    <div class="flex flex-col items-center">
-        <Logo />
-        {#if currentQuestion}
-            <h2 class="text-xs m-2 px-2 font-semibold flex justify-between w-full">
-                <p>QUESTIONS</p>
-                <p>{gc.currentQuestionIndex + 1}/{gc.questions.length}</p>
-            </h2>
-            {#if currentQuestion.type === QuestionType.Quote}
-                <QuoteCard currentQuestion={currentQuestion} setAnswer={(e: boolean) => processAnswer(e)} />
-            {:else if currentQuestion.type === QuestionType.Art}
-                <ImageCard currentQuestion={currentQuestion} setAnswer={(e: boolean) => processAnswer(e)} />
-            {:else if currentQuestion.type === QuestionType.Music}
-                <AudioCard currentQuestion={currentQuestion} setAnswer={(e: boolean) => processAnswer(e)} />
+    {#if gameResults}
+        <!-- Game End Screen -->
+        <GameEndScreen 
+            gameResults={gameResults} 
+            questions={gc.questions} 
+            onRestart={restartGame} 
+        />
+    {:else}
+        <div class="flex flex-col items-center">
+            <Logo />
+            {#if gc.isLoading}
+                <div class="p-10">
+                    <h2 class="text-xl">Loading game content...</h2>
+                </div>
+            {:else if currentQuestion}
+                <h2 class="text-xs m-2 px-2 font-semibold flex justify-between w-full">
+                    <p>QUESTIONS</p>
+                    <p>{gc.currentQuestionIndex + 1}/{gc.questions.length}</p>
+                </h2>
+                {#if currentQuestion.type === QuestionType.Quote && currentQuestion.content}
+                    <QuoteCard currentQuestion={currentQuestion} setAnswer={(e: boolean) => processAnswer(e)} />
+                {:else if currentQuestion.type === QuestionType.Art && currentQuestion.content}
+                    <ArtCard currentQuestion={currentQuestion} setAnswer={(e: boolean) => processAnswer(e)} />
+                {:else if currentQuestion.type === QuestionType.Music && currentQuestion.content}
+                    <AudioCard currentQuestion={currentQuestion} setAnswer={(e: boolean) => processAnswer(e)} />
+                {:else if currentQuestion.type === QuestionType.StockPhoto && currentQuestion.content}
+                    <StockPhotoCard currentQuestion={currentQuestion} setAnswer={(e: boolean) => processAnswer(e)} />
+                {:else}
+                    <div class="p-10">
+                        <h2 class="text-xl">Loading question content...</h2>
+                    </div>
+                {/if}
+            {:else}
+                <h2>Loading...</h2>
             {/if}
-        {/if}<div class="m-4">
-            {@render progressDots(answers)}
+            <div class="m-4">
+                {@render progressDots(answers)}
+            </div>
         </div>
-    </div>
+    {/if}
 </div>

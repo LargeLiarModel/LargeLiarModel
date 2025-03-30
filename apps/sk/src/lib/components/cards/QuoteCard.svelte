@@ -1,6 +1,6 @@
 <script lang="ts">
 import { GameStatus, QuestionType, type GameConfig } from "$lib/game/types";
-import type { Question } from "$lib/game/Question";
+import type { Question } from "$lib/game/Question.svelte";
 import Button from "../ui/button/button.svelte";
 
 let { currentQuestion, setAnswer } = $props();

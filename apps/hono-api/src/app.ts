@@ -171,6 +171,7 @@ const images = new Hono().get("/", async (c) => {
         },
       });
 
+
       const res = result.candidates?.[0]?.content?.parts ?? [];
 
       for (const part of res) {

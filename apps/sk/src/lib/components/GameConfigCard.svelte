@@ -5,11 +5,11 @@ import Button from "./ui/button/button.svelte";
 let { setConfig } = $props();
 
 let config = createGameConfig(5, [
-    QuestionType.Quote,
-    QuestionType.Quote,
-    QuestionType.Quote,
-    QuestionType.Quote,
-    QuestionType.Quote,
+    QuestionType.StockPhoto,
+    QuestionType.StockPhoto,
+    QuestionType.StockPhoto,
+    QuestionType.StockPhoto,
+    QuestionType.StockPhoto,
 ]);
 </script>
 <div class="flex flex-col items-center justify-center gap-6">

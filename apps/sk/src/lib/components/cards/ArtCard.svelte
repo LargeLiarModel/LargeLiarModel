@@ -20,7 +20,8 @@ interface ImageData {
 
 interface ApiResponse {
   realImageData: ImageData;
-  genImageData: string;
+  genImageData: ImageData; // Changed from string to match the actual structure
+  isAIGenerated?: boolean; // Flag indicating if genImageData is truly AI-generated
   error?: string;
 }
 
@@ -42,8 +43,19 @@ onMount(async () => {
     
     if (data.realImageData?.inlineData?.data && data.genImageData) {
       realImage = `data:${data.realImageData.inlineData.mimeType || 'image/jpeg'};base64,${data.realImageData.inlineData.data}`;
-      genImage = `data:image/jpeg;base64,${data.genImageData}`;
+      genImage = `data:${data.genImageData.inlineData.mimeType || 'image/jpeg'};base64,${data.genImageData.inlineData.data}`;
       loading = false;
+      
+      // Check if the "generated" image is actually AI-generated
+      const isActuallyAIGenerated = data.isAIGenerated === true;
+      
+      // If the "generated" image is not actually AI-generated (it's a fallback real image),
+      // update the currentQuestion's correctAnswer property to reflect this
+      if (!isActuallyAIGenerated && currentQuestion) {
+        console.log("Warning: Using fallback real image instead of AI-generated image");
+        // Both images are real in this case, so we need to update the question's correctAnswer
+        currentQuestion.correctAnswer = true;
+      }
     } else {
       throw new Error('Invalid image data received from API');
     }
