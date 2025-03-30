@@ -37,7 +37,9 @@ export interface MusicContent {
 
 export interface NewsContent {
     headline: string;
-    source: string;
+    source?: string;
+    text: string;
+    date: string;
 }
 
 export interface StockPhotoContent {
