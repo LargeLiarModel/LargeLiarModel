@@ -2,8 +2,8 @@
   "framework": "sveltekit",
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api"
+      "src": "/hono-api/(.*)",
+      "dest": "/hono-api"
     },
     {
       "src": "/(.*)",
@@ -11,8 +11,8 @@
     }
   ],
   "functions": {
-    "api/index.js": {
-      "handler": "api/dist/index.js",
+    "hono-api/index.js": {
+      "handler": "hono-api/dist/index.js",
       "runtime": "nodejs18.x",
       "memory": 128,
       "maxDuration": 10
@@ -20,18 +20,18 @@
   },
   "builds": [
     {
-      "src": "frontend/package.json",
+      "src": "sk/package.json",
       "use": "@sveltejs/adapter-vercel-sveltekit"
     },
     {
-      "src": "api/package.json",
+      "src": "hono-api/package.json",
       "use": "@vercel/node",
       "config": {
         "entrypoint": "dist/index.js"
       }
     }
   ],
-  "buildCommand": "bun install --cwd frontend && bun run build --cwd frontend && bun install --cwd api && bun run build --cwd api",
+  "buildCommand": "bun install --cwd api && bun run build --cwd api bun install --cwd frontend && bun run build --cwd frontend",
   "outputDirectory": "frontend/build",
   "devCommand": "bun run dev --cwd frontend"
 }
