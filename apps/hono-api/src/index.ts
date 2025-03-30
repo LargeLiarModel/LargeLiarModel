@@ -51,7 +51,6 @@ app.get("/twin/quotes", async (c) => {
   //     );
   //   out += `${cand.Firstlast}, had $${total[0].value} spent on there behalf during the 2022 election cycle\n`;
   // }
-  cand = cand_list[0];
   const total = await db
     .select({ value: sum(PAC_Candidate.Amount) })
     .from(PAC_Candidate)
@@ -61,6 +60,15 @@ app.get("/twin/quotes", async (c) => {
         and(ne(PAC_Candidate.Type, "24A"), ne(PAC_Candidate.Type, "24N"))
       )
     );
+
+  const bio_prompt = `I am going to give you a name of a political candidate from 2022, and I want you to give me a short 2 sentance biography, including their name, political views, and other important factors. Do not ask any follow up questions, only give the biography: ${cand.Firstlast}`;
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
+  const bio_res = await ai.models.generateContent({
+    model: "gemini-2.0-flash",
+    contents: bio_prompt,
+  });
+
+  const quest_prompt = `${cand.Firstlast}, had $329032 spent on there behalf by Pacs during the 2022 election cycle. Please generate a question asking if they received more money than this during the cycle? This is for the purpose of a game. With no other details and round the number.`;
 
   // return c.text(
   //   `${cand.Firstlast}, had $${total[0].value} spent on there behalf during the 2022 election cycle`
@@ -159,17 +167,6 @@ For each image in the list, provide a description clearly labeled with the image
     return c.json(generatedDescription);
   })
 );
-
-app.get("/twin/quotes", async (c) => {
-  console.log("running");
-  // const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
-  const response = await ai.models.generateContent({
-    model: "gemini-2.0-flash",
-    contents: "Explain how AI works",
-  });
-
-  return c.json(response);
-});
 
 export type AppType = typeof app;
 export default app;

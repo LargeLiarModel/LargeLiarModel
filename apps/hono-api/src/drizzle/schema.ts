@@ -1,3 +1,4 @@
+import { int } from "drizzle-orm/mysql-core";
 import {
   integer,
   real,
@@ -50,17 +51,14 @@ export const Committees = sqliteTable("Committees", {
   Active: integer({ mode: "boolean" }),
 });
 
-export const Individual_Candidates = sqliteTable(
-  "Individual_Candidates",
-  {
-    Cycle: integer(),
-    candID: text()
-      .references(() => Candidates.CID)
-      .notNull(),
-    contributions: real().notNull(),
-  },
-  (table) => [primaryKey({ columns: [table.Cycle, table.FECTransID] })]
-);
+export const Individual_Candidates = sqliteTable("Individual_Candidates", {
+  id: integer().primaryKey({ autoIncrement: true }),
+  Cycle: integer(),
+  candID: text()
+    .references(() => Candidates.CID)
+    .notNull(),
+  contributions: real().notNull().default(0),
+});
 
 // https://www.opensecrets.org/resources/datadictionary/Data%20Dictionary%20for%20PAC%20to%20Cands%20Data.htm
 export const PAC_Candidate = sqliteTable(
