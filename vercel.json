@@ -31,7 +31,7 @@
       }
     }
   ],
-  "buildCommand": "bun install --cwd api && bun run build --cwd api bun install --cwd frontend && bun run build --cwd frontend",
+  "buildCommand": "npm run vercel-build",
   "outputDirectory": "frontend/build",
   "devCommand": "bun run dev --cwd frontend"
 }
