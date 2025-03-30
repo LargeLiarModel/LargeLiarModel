@@ -5,9 +5,16 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist"],
   "scripts": {
     "dev": "bun run --hot src/app.ts",
-    "build": "tsc && bun build src/app.ts --outdir dist",
+    "build": "tsc && bun build src/index.ts --outdir dist && bun build src/app.ts --outdir dist && tsc --emitDeclarationOnly",
     "start": "bun run src/app.ts",
     "types": "tsc --emitDeclarationOnly"
   },
