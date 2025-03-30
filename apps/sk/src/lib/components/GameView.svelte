@@ -26,6 +26,9 @@ let { config } = $props();
 
 let gc: GameController = $state(new GameController(config));
 
+// Track the robot's reaction state
+let logoAnswerStatus = $state('neutral' as 'neutral' | 'correct' | 'incorrect');
+
 let answers = $derived.by(() => {
     return gc.questions.map((q, i) => {
         const userAnswer = gc.userAnswers[i];
@@ -40,6 +43,18 @@ let currentQuestion = $derived.by(() => {
 });
 
 let processAnswer = (answer: boolean) => {
+    // Check if the answer is correct
+    const isCorrect = answer === currentQuestion.correctAnswer;
+    
+    // Set the logo's reaction based on correctness
+    logoAnswerStatus = isCorrect ? 'correct' : 'incorrect';
+    
+    // Reset the logo's reaction after 2 seconds
+    setTimeout(() => {
+        logoAnswerStatus = 'neutral';
+    }, 2000);
+    
+    // Submit the answer to the game controller
     gc.submitAnswer(answer);
 };
 
@@ -80,7 +95,7 @@ let gameResults = $derived.by(() => {
         />
     {:else}
         <div class="flex flex-col items-center">
-            <Logo isLoading={gc.isLoading} />
+            <Logo isLoading={gc.isLoading} answerStatus={logoAnswerStatus} />
             {#if gc.isLoading}
                 <div class="p-10">
                     <h2 class="text-xl animate-pulse">Loading game content...</h2>

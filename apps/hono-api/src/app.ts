@@ -16,10 +16,6 @@ import {
 import HTTPException from "hono/http-exception";
 
 import { GoogleGenAI } from "@google/genai";
-import { json, real } from "drizzle-orm/gel-core";
-import { SQLiteColumn } from "drizzle-orm/sqlite-core";
-import { isBinaryOperatorToken } from "typescript";
-import { PgJsonBuilder } from "drizzle-orm/pg-core";
 
 import articles from "./articles.json";
 
