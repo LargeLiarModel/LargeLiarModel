@@ -1,8 +1,9 @@
 <script lang="ts">
   import Button from "$lib/components/ui/button/button.svelte";
+  import ApiTest from "$lib/components/ApiTest.svelte";
 </script>
 
-<div class="">
+<div>
   <section id="hero" class="bg-gray-300">
     <div class="h-[65vh] flex flex-col justify-center bg-gray-300 container gap-6">
       <h1 class="text-7xl font-semibold max-w-[60vw]">
@@ -19,5 +20,10 @@
         <Button variant="outline">Learn More</Button>
       </div>
     </div>
+  </section>
+  
+  <section id="api-test" class="container my-12">
+    <h2 class="text-3xl font-semibold mb-6">API Connection Test</h2>
+    <ApiTest />
   </section>
 </div>
