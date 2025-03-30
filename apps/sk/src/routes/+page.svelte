@@ -4,7 +4,7 @@
 </script>
 
 <div class="">
-  <section id="hero" class="bg-yellow-400">
+  <section id="hero" >
     <div class="h-screen flex flex-col justify-center container gap-8 pt-14">
       <h1 class="text-9xl font-extrabold -m-1">
         Can you outsmart 40 billion parameters?
