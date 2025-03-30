@@ -28,6 +28,7 @@ export interface QuoteContent {
 
 export interface ArtContent {
     imageUrl: string;
+    selectedImageUrl?: string; // The image URL that the user selected during the game
 }
 
 export interface MusicContent {
@@ -42,6 +43,7 @@ export interface NewsContent {
 
 export interface StockPhotoContent {
     imageData: string;
+    selectedImageData?: string; // The image data that the user selected during the game
 }
 
 export enum GameStatus {

@@ -1,6 +1,7 @@
 <script lang="ts">
 import Button from "../ui/button/button.svelte";
 import type { Question } from "$lib/game/Question.svelte";
+import type { StockPhotoContent } from "$lib/game/types";
 
 let { currentQuestion, setAnswer } = $props();
 
@@ -8,6 +9,24 @@ let { currentQuestion, setAnswer } = $props();
 let hasValidImageData = $derived(
   currentQuestion?.content?.imageData && currentQuestion.content.imageData.length > 0
 );
+
+// Function to handle user's answer
+function handleAnswer(answer: boolean): void {
+  console.log("[StockPhotoCard] handleAnswer - answer:", answer);
+  console.log("[StockPhotoCard] handleAnswer - currentQuestion.correctAnswer:", currentQuestion?.correctAnswer);
+  console.log("[StockPhotoCard] handleAnswer - currentQuestion:", currentQuestion);
+  
+  // Store the selected image data in the question's content
+  if (currentQuestion?.content) {
+    const content = currentQuestion.content as StockPhotoContent;
+    // Store the image data that the user saw when making their decision
+    content.selectedImageData = content.imageData;
+    console.log("[StockPhotoCard] handleAnswer - content.selectedImageData:", content.selectedImageData);
+  }
+  
+  // Pass the answer to the parent component
+  setAnswer(answer);
+}
 </script>
 
 <div class="bg-white flex flex-col justify-center items-center p-10 rounded">
@@ -20,11 +39,11 @@ let hasValidImageData = $derived(
         </button>
       </div>
       <div class="flex flex-row justify-center gap-4 w-full">
-        <Button onclick={() => setAnswer(true)} class="bg-gray-800 hover:bg-green-500 text-white text-xl font-bold w-full h-16">
+        <Button onclick={() => handleAnswer(true)} class="bg-gray-800 hover:bg-green-500 text-white text-xl font-bold w-full h-16">
           REAL
         </Button>
 
-        <Button onclick={() => setAnswer(false)} class="bg-gray-800 hover:bg-red-500 text-white text-xl font-bold w-full h-16">
+        <Button onclick={() => handleAnswer(false)} class="bg-gray-800 hover:bg-red-500 text-white text-xl font-bold w-full h-16">
           AI-GENERATED
         </Button>
       </div>

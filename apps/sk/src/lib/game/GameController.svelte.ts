@@ -41,8 +41,8 @@ export default class GameController {
     
     async initialize() {
         try {
-            // Preload first batch of questions
-            await this.preloadContent(0, 3);
+            // Preload ALL questions at the start
+            await this.preloadContent(0, this.questions.length);
             // Set loading to false when initial content is loaded
             this.isLoading = false;
         } catch (error) {
@@ -283,40 +283,48 @@ export default class GameController {
             return;
         }
 
+        console.log("[GameController] submitAnswer - before content update - currentQuestion.content:", currentQuestion.content);
+
         const correct = userGuess === currentQuestion.correctAnswer;
 
-        if (correct) {
-            this.score++;
-        }
+        // Add a small delay to ensure the card components have time to update the question.content
+        // with selectedImageData or selectedImageUrl before we increment the currentQuestionIndex
+        setTimeout(() => {
+            console.log("[GameController] submitAnswer - after content update - currentQuestion.content:", currentQuestion.content);
 
-        this.userAnswers.push({
-            questionId: currentQuestion.id,
-            userGuess: userGuess,
-        });
+            if (correct) {
+                this.score++;
+            }
 
-        this.currentQuestionIndex++;
-        
-        // Set loading state while we preload the next batch
-        const nextIndex = this.currentQuestionIndex;
-        if (nextIndex < this.questions.length && !this.questions[nextIndex].content) {
-            // Only set loading if the next question's content isn't already loaded
-            this.isLoading = true;
-        }
-        
-        // Preload more content when we advance
-        this.preloadContent(this.currentQuestionIndex, 3) // Always keep 3 questions ahead loaded
-            .then(() => {
-                // Clear loading state when preloading is done
-                this.isLoading = false;
-            })
-            .catch(error => {
-                console.error("Error preloading content:", error);
-                this.isLoading = false;
+            this.userAnswers.push({
+                questionId: currentQuestion.id,
+                userGuess: userGuess,
             });
 
-        if (this.currentQuestionIndex === this.questions.length) {
-            this.gameState = GameStatus.Ended;
-        }
+            this.currentQuestionIndex++;
+            
+            // Set loading state while we preload the next batch
+            const nextIndex = this.currentQuestionIndex;
+            if (nextIndex < this.questions.length && !this.questions[nextIndex].content) {
+                // Only set loading if the next question's content isn't already loaded
+                this.isLoading = true;
+            }
+            
+            // Preload more content when we advance
+            this.preloadContent(this.currentQuestionIndex, 3) // Always keep 3 questions ahead loaded
+                .then(() => {
+                    // Clear loading state when preloading is done
+                    this.isLoading = false;
+                })
+                .catch(error => {
+                    console.error("Error preloading content:", error);
+                    this.isLoading = false;
+                });
+
+            if (this.currentQuestionIndex === this.questions.length) {
+                this.gameState = GameStatus.Ended;
+            }
+        }, 50); // 50ms delay should be enough for the card components to update
 
         return;
     }
@@ -341,6 +349,8 @@ export default class GameController {
         if (this.gameState !== GameStatus.Ended) {
             return null;
         }
+
+        console.log("[GameController] getGameResults - questions array:", this.questions);
 
         const statsByType = this.questions.reduce(
             (acc, question, index) => {

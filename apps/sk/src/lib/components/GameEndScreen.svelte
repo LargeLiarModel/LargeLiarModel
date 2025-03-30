@@ -28,6 +28,10 @@
   function getImageSrc(question: Question): string {
     if (question.type === QuestionType.StockPhoto && question.content) {
       const content = question.content as StockPhotoContent;
+      // If we have the selected image data (what the user saw during the game), use that
+      if (content.selectedImageData) {
+        return `data:image/png;base64,${content.selectedImageData}`;
+      }
       if (content.imageData) {
         return `data:image/png;base64,${content.imageData}`;
       }
@@ -35,6 +39,10 @@
 
     if (question.type === QuestionType.Art && question.content) {
       const content = question.content as ArtContent;
+      // If the user selected an image during the game, use that image
+      if (content.selectedImageUrl) {
+        return content.selectedImageUrl;
+      }
       if (content.imageUrl) {
         return content.imageUrl;
       }

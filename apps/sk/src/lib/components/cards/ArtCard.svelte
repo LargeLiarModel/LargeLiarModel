@@ -1,12 +1,14 @@
 <script lang="ts">
 import { onMount } from 'svelte';
 import client from '$lib/client';
+import type { ArtContent } from "$lib/game/types";
 
 let { currentQuestion, setAnswer } = $props();
 let realImage = $state('');
 let genImage = $state('');
 let loading = $state(true);
 let error = $state<Error | null>(null);
+let apiResponse = $state<ApiResponse | null>(null);
 
 // Randomly decide which image is on the left vs right
 let realImageOnLeft = $state(Math.random() > 0.5);
@@ -36,6 +38,7 @@ onMount(async () => {
     }
     
     const data = await response.json() as ApiResponse;
+    apiResponse = data; // Store the API response for later use
     
     if (data.error) {
       throw new Error(data.error);
@@ -49,12 +52,20 @@ onMount(async () => {
       // Check if the "generated" image is actually AI-generated
       const isActuallyAIGenerated = data.isAIGenerated === true;
       
+      console.log("[ArtCard] API Response:", {
+        isAIGenerated: data.isAIGenerated,
+        hasRealImage: !!data.realImageData?.inlineData?.data,
+        hasGenImage: !!data.genImageData?.inlineData?.data
+      });
+
       // If the "generated" image is not actually AI-generated (it's a fallback real image),
       // update the currentQuestion's correctAnswer property to reflect this
       if (!isActuallyAIGenerated && currentQuestion) {
-        console.log("Warning: Using fallback real image instead of AI-generated image");
+        console.log("[ArtCard] Warning: Using fallback real image instead of AI-generated image");
+        console.log("[ArtCard] Before update - currentQuestion.correctAnswer:", currentQuestion.correctAnswer);
         // Both images are real in this case, so we need to update the question's correctAnswer
         currentQuestion.correctAnswer = true;
+        console.log("[ArtCard] After update - currentQuestion.correctAnswer:", currentQuestion.correctAnswer);
       }
     } else {
       throw new Error('Invalid image data received from API');
@@ -71,6 +82,22 @@ onMount(async () => {
 });
 
 function handleImageClick(isRealImage: boolean): void {
+  // Store which image the user selected in the question's content
+  // This ensures the end screen shows the exact image the user chose
+  if (currentQuestion?.content) {
+    // Create a new content object that includes both the original image URL
+    // and the selected image URL (the one the user clicked on)
+    const artContent = currentQuestion.content as ArtContent;
+    const selectedImageUrl = isRealImage ? realImage : genImage;
+    
+    // Update the content to include the selected image
+    artContent.selectedImageUrl = selectedImageUrl;
+    console.log("[ArtCard] handleImageClick - selectedImageUrl:", selectedImageUrl);
+    console.log("[ArtCard] handleImageClick - isRealImage:", isRealImage);
+    console.log("[ArtCard] handleImageClick - currentQuestion.correctAnswer:", currentQuestion?.correctAnswer);
+    console.log("[ArtCard] handleImageClick - currentQuestion:", currentQuestion);
+  }
+  
   // The correct answer is when the user clicks on the real image
   setAnswer(isRealImage);
 }
