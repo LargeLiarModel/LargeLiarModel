@@ -2,10 +2,10 @@ import { hcWithType, type AppType } from "@largeliarmodel/hono-api";
 import { hc } from "hono/client";
 
 // Handle client side and server side conditions
-const base =
-    typeof window === "undefined"
-        ? "http://localhost:3000" // Direct connection on server side
-        : "/api"; // Use the proxy on client side
+const base = 
+    process.env.NODE_ENV === "development" && typeof window === "undefined"
+        ? "http://localhost:3000" // Local development server-side
+        : "/api"; // Use /api path for both client and server in production
 
 // Create the client with pre-computed types
 const client = hcWithType(base);

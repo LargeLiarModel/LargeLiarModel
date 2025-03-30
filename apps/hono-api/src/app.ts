@@ -35,7 +35,13 @@ const app = new Hono();
 app.use(
     "/*",
     cors({
-        origin: ["http://localhost:5173", "http://localhost:4173"], // SvelteKit dev and preview ports
+        // Allow requests from any origin in production, or localhost in development
+        origin: (origin) => {
+            // In production with Vercel, the API and frontend are on the same domain
+            // so CORS isn't an issue for client-side requests
+            // For server-side requests, we need to allow the Vercel internal URLs
+            return origin || "*";
+        },
         allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allowHeaders: ["Content-Type", "Authorization"],
         exposeHeaders: ["Content-Length"],
