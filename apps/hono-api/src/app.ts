@@ -3,10 +3,10 @@ import { validator } from "hono/validator";
 import { cors } from "hono/cors";
 import { z } from "zod";
 
-
 import { db } from "./drizzle/client";
-import { eq } from "drizzle-orm";
+import { and, eq, ne, sum } from "drizzle-orm";
 import {
+  Candidates,
   Candidacies,
   Committees,
   PAC_Candidate,
@@ -29,14 +29,17 @@ function arrayBufferToBase64(buffer: ArrayBuffer) {
 const app = new Hono();
 
 // Apply CORS middleware to allow cross-origin requests from the SvelteKit app
-app.use("/*", cors({
-  origin: ["http://localhost:5173", "http://localhost:4173"], // SvelteKit dev and preview ports
-  allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowHeaders: ["Content-Type", "Authorization"],
-  exposeHeaders: ["Content-Length"],
-  maxAge: 600,
-  credentials: true,
-}));
+app.use(
+  "/*",
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:4173"], // SvelteKit dev and preview ports
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+    exposeHeaders: ["Content-Length"],
+    maxAge: 600,
+    credentials: true,
+  })
+);
 
 app.get("/", async (c) => {
   // const i = Math.floor(Math.random() * 8290);
@@ -47,6 +50,53 @@ app.get("/", async (c) => {
 
 const schema = z.object({
   body: z.number().gt(0),
+});
+
+app.get("/quotes", async (c) => {
+  const i = Math.floor(Math.random() * 32);
+  const cand_list = await db
+    .select()
+    .from(Candidates)
+    .where(eq(Candidates.id, i));
+  const cand = cand_list[0];
+  cand.CID;
+  // const cand_list = await db.select().from(Candidates);
+  // let out = "";
+  // for (let i = 0; i < cand_list.length; i++) {
+  //   let cand = cand_list[i];
+  //   const total = await db
+  //     .select({ value: sum(PAC_Candidate.Amount) })
+  //     .from(PAC_Candidate)
+  //     .where(
+  //       and(
+  //         eq(PAC_Candidate.CID, cand.CID),
+  //         and(ne(PAC_Candidate.Type, "24A"), ne(PAC_Candidate.Type, "24N"))
+  //       )
+  //     );
+  //   out += `${cand.Firstlast}, had $${total[0].value} spent on there behalf during the 2022 election cycle\n`;
+  // }
+  const total = await db
+    .select({ value: sum(PAC_Candidate.Amount) })
+    .from(PAC_Candidate)
+    .where(
+      and(
+        eq(PAC_Candidate.CID, cand.CID),
+        and(ne(PAC_Candidate.Type, "24A"), ne(PAC_Candidate.Type, "24N"))
+      )
+    );
+
+  const bio_prompt = `I am going to give you a name of a political candidate from 2022, and I want you to give me a short 2 sentance biography, including their name, political views, and other important factors. Do not ask any follow up questions, only give the biography: ${cand.Firstlast}`;
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
+  const bio_res = await ai.models.generateContent({
+    model: "gemini-2.0-flash",
+    contents: bio_prompt,
+  });
+
+  const quest_prompt = `${cand.Firstlast}, had $329032 spent on there behalf by Pacs during the 2022 election cycle. Please generate a question asking if they received more money than this during the cycle? This is for the purpose of a game. With no other details and round the number.`;
+
+  // return c.text(
+  //   `${cand.Firstlast}, had $${total[0].value} spent on there behalf during the 2022 election cycle`
+  // );
 });
 
 const images = new Hono().get(
@@ -139,27 +189,25 @@ For each image in the list, provide a description clearly labeled with the image
       contents: [prompt, imgs[0]],
       config: {
         responseModalities: ["TEXT"],
-      }
+      },
     });
 
-    const generatedDescriptionText = generatedDescription?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const generatedDescriptionText =
+      generatedDescription?.candidates?.[0]?.content?.parts?.[0]?.text;
 
+    const generatedImage = await genAI.models.generateContent({
+      model: "gemini-2.0-flash-exp-image-generation",
+      contents: `Generate an image fulfilling the following description: ${generatedDescriptionText}`,
+      config: {
+        responseModalities: ["TEXT", "IMAGE"],
+      },
+    });
 
-    const generatedImage = await genAI.models.generateContent(
-      {
-        model: "gemini-2.0-flash-exp-image-generation",
-        contents:
-          `Generate an image fulfilling the following description: ${generatedDescriptionText}`,
-        config: {
-          responseModalities: ["TEXT", "IMAGE"],
-        },
-      }
-    );
-
-    const imageBinary = generatedImage?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+    const imageBinary =
+      generatedImage?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
     return c.json({
       genImageData: imageBinary,
-      realImageData: imgs[0]
+      realImageData: imgs[0],
     });
   })
 );
