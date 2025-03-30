@@ -8,13 +8,13 @@ import { db } from "./drizzle/client";
 import { eq } from "drizzle-orm";
 import {
   Candidacies,
-  Candidate,
   Committees,
   PAC_Candidate,
   PAC_PAC,
 } from "./drizzle/schema";
 
 import { GoogleGenAI } from "@google/genai";
+import { real } from "drizzle-orm/gel-core";
 
 function arrayBufferToBase64(buffer: ArrayBuffer) {
   let binary = "";
@@ -136,7 +136,7 @@ For each image in the list, provide a description clearly labeled with the image
 
     const generatedDescription = await genAI.models.generateContent({
       model: "gemini-2.0-flash",
-      contents: [prompt, ...imgs],
+      contents: [prompt, imgs[0]],
       config: {
         responseModalities: ["TEXT"],
       }
@@ -157,7 +157,10 @@ For each image in the list, provide a description clearly labeled with the image
     );
 
     const imageBinary = generatedImage?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-    return c.json({ imageData: imageBinary });
+    return c.json({
+      genImageData: imageBinary,
+      realImageData: imgs[0]
+    });
   })
 );
 
