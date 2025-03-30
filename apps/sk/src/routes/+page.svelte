@@ -1,12 +1,12 @@
 <script lang="ts">
-  import client from "$lib/client";
-  import Button from "$lib/components/ui/button/button.svelte";
-  import { MoveRight } from "@lucide/svelte";
+import client from "$lib/client";
+import Button from "$lib/components/ui/button/button.svelte";
+import { MoveRight } from "@lucide/svelte";
 </script>
 
-  <section id="hero" class="bg-white/60">
+  <section id="hero" class="">
     <div
-      class="h-[65vh] flex flex-col justify-center container gap-6 pt-32"
+      class="h-[100vh] flex flex-col justify-center container gap-6 pt-32"
     >
       <h1 class="text-7xl font-semibold max-w-[60vw]">
         Can you outsmart 40 billion parameters?
