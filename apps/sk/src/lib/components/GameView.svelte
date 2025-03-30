@@ -17,19 +17,13 @@ import ImageCard from "./cards/ArtCard.svelte";
 import AudioCard from "./cards/AudioCard.svelte";
 import ArtCard from "./cards/ArtCard.svelte";
 import StockPhotoCard from "./cards/StockPhotoCard.svelte";
+import GameEndScreen from "./GameEndScreen.svelte";
 import client from "$lib/client";
 import { Content } from "./ui/sheet";
 
 let { config } = $props();
 
 let gc: GameController = $state(new GameController(config));
-let questionContent: (
-    | StockPhotoContent
-    | ArtContent
-    | QuoteContent
-    | MusicContent
-    | NewsContent
-)[] = $state([]);
 
 let answers = $derived.by(() => {
     return gc.questions.map((q, i) => {
@@ -48,39 +42,15 @@ let processAnswer = (answer: boolean) => {
     gc.submitAnswer(answer);
 };
 
-let preloadNextQuestion = async () => {
-    if (gc.currentQuestionIndex + 1 < gc.questions.length) {
-        let idx = gc.currentQuestionIndex + 1;
-        if (gc.questions[idx].type === QuestionType.StockPhoto) {
-            const response = await client.images.$get();
-            console.log("API response:", response);
-
-            if (!response.ok) {
-                throw new Error(
-                    `API responded with status: ${response.status}`,
-                );
-            }
-
-            let data = await response.json();
-            if (Math.random() > 0.5) {
-                questionContent.push({
-                    imageData: data.realImageData.inlineData.data,
-                });
-                gc.questions[idx].correctAnswer = true;
-            } else {
-                if (data.genImageData)
-                    questionContent.push({
-                        imageData: data.genImageData.inlineData.data,
-                    });
-                gc.questions[idx].correctAnswer = false;
-            }
-            console.log(gc.questions[idx]);
-        }
-    }
+let restartGame = () => {
+    gc.reset();
+    // Reinitialize the game controller with the same config
+    gc = new GameController(config);
 };
 
-$effect(() => {
-    preloadNextQuestion();
+// Get game results when the game is over
+let gameResults = $derived.by(() => {
+    return gc.gameState === GameStatus.Ended ? gc.getGameResults() : null;
 });
 </script>
 
@@ -100,27 +70,44 @@ $effect(() => {
 
 
 <div class="flex flex-col items-center justify-center gap-6 w-full">
-    <div class="flex flex-col items-center">
-        <Logo />
-        {#if currentQuestion }
-            <h2 class="text-xs m-2 px-2 font-semibold flex justify-between w-full">
-                <p>QUESTIONS</p>
-                <p>{gc.currentQuestionIndex + 1}/{gc.questions.length}</p>
-            </h2>
-            {#if currentQuestion.type === QuestionType.Quote}
-                <QuoteCard currentQuestion={currentQuestion} setAnswer={(e: boolean) => processAnswer(e)} />
-            {:else if currentQuestion.type === QuestionType.Art}
-                <ArtCard currentQuestion={currentQuestion} setAnswer={(e: boolean) => processAnswer(e)} />
-            {:else if currentQuestion.type === QuestionType.Music}
-                <AudioCard currentQuestion={currentQuestion} setAnswer={(e: boolean) => processAnswer(e)} />
-            {:else if currentQuestion.type == QuestionType.StockPhoto}
-                <StockPhotoCard i={gc.currentQuestionIndex} questionContent={questionContent} setAnswer={(e: boolean) => processAnswer(e)} />
+    {#if gameResults}
+        <!-- Game End Screen -->
+        <GameEndScreen 
+            gameResults={gameResults} 
+            questions={gc.questions} 
+            onRestart={restartGame} 
+        />
+    {:else}
+        <div class="flex flex-col items-center">
+            <Logo />
+            {#if gc.isLoading}
+                <div class="p-10">
+                    <h2 class="text-xl">Loading game content...</h2>
+                </div>
+            {:else if currentQuestion}
+                <h2 class="text-xs m-2 px-2 font-semibold flex justify-between w-full">
+                    <p>QUESTIONS</p>
+                    <p>{gc.currentQuestionIndex + 1}/{gc.questions.length}</p>
+                </h2>
+                {#if currentQuestion.type === QuestionType.Quote && currentQuestion.content}
+                    <QuoteCard currentQuestion={currentQuestion} setAnswer={(e: boolean) => processAnswer(e)} />
+                {:else if currentQuestion.type === QuestionType.Art && currentQuestion.content}
+                    <ArtCard currentQuestion={currentQuestion} setAnswer={(e: boolean) => processAnswer(e)} />
+                {:else if currentQuestion.type === QuestionType.Music && currentQuestion.content}
+                    <AudioCard currentQuestion={currentQuestion} setAnswer={(e: boolean) => processAnswer(e)} />
+                {:else if currentQuestion.type === QuestionType.StockPhoto && currentQuestion.content}
+                    <StockPhotoCard currentQuestion={currentQuestion} setAnswer={(e: boolean) => processAnswer(e)} />
+                {:else}
+                    <div class="p-10">
+                        <h2 class="text-xl">Loading question content...</h2>
+                    </div>
+                {/if}
+            {:else}
+                <h2>Loading...</h2>
             {/if}
-        {:else}
-            <h2>Loading...</h2>
-        {/if}
-        <div class="m-4">
-            {@render progressDots(answers)}
+            <div class="m-4">
+                {@render progressDots(answers)}
+            </div>
         </div>
-    </div>
+    {/if}
 </div>

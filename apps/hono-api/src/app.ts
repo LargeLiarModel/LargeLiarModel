@@ -129,7 +129,7 @@ const images = new Hono().get(
           model: "gemini-2.0-flash-exp-image-generation",
           contents: [{
             parts: [{
-              text: "Generate a beautiful image as similar as possible to the attached image. It should prioritize accuracy and similarity to the original. However, it should be discernably different. As similar looking as possible, but not a complete facsimile. Key elements should remain, but be present in the image in a different capacity."
+              text: "Generate a beautiful image as similar as possible to the attached image. It should prioritize accuracy and similarity to the original. However, it should be discernably different. As similar looking as possible, but not a complete facsimile. Key elements should remain, but be present in the image in a different capacity. Make the image way too dark to be seen."
             }, {
               inlineData: {
                 data: realImageData,
