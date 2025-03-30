@@ -2,11 +2,10 @@
   import Button from "$lib/components/ui/button/button.svelte";
   import { MoveRight } from "@lucide/svelte";
 </script>
-
-<div class="">
-  <section id="hero" >
-    <div class="h-screen flex flex-col justify-center container gap-8 pt-14">
-      <h1 class="text-9xl font-extrabold -m-1">
+<div>
+  <section id="hero" class="bg-gray-300">
+    <div class="h-[65vh] flex flex-col justify-center bg-gray-300 container gap-6">
+      <h1 class="text-7xl font-semibold max-w-[60vw]">
         Can you outsmart 40 billion parameters?
       </h1>
       <p class="text-3xl font-light leading-snug">
@@ -25,5 +24,10 @@
       </div>
       <div class="pb-20"></div>
     </div>
+  </section>
+  
+  <section id="api-test" class="container my-12">
+    <h2 class="text-3xl font-semibold mb-6">API Connection Test</h2>
+    <ApiTest />
   </section>
 </div>
