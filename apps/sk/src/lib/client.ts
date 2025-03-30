@@ -6,7 +6,7 @@ import { hc } from "hono/client";
 // Handle client side and server side conditions
 const base = 
     process.env.NODE_ENV === "development" && typeof window === "undefined"
-        ? "http://localhost:3000" // Local development server-side
+        ? "http://backend:3000" // Local development server-side
         : "/api"; // Use /api path for both client and server in production
 
 // Create the client with pre-computed types

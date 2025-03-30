@@ -15,7 +15,7 @@ export default defineConfig({
 		proxy: {
 			// Proxy API requests to the Hono server during development
 			'/api': {
-				target: 'http://localhost:3000',
+				target: 'http://backend:3000',
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api/, ''),
 				configure: (proxy, _options) => {
