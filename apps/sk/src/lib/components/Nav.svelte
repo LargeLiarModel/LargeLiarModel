@@ -1,19 +1,17 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button";
-  import { Sheet, SheetContent, SheetTrigger } from "$lib/components/ui/sheet";
-  import { Menu } from "@lucide/svelte";
-  import { page } from "$app/state";
+import { Button } from "$lib/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "$lib/components/ui/sheet";
+import { Menu } from "@lucide/svelte";
+import { page } from "$app/state";
 
-  // Define the navigation items
-  const navItems = [
-    { label: "", href: "/" },
-  ];
+// Define the navigation items
+const navItems = [{ label: "", href: "/" }];
 
-  // Determine if a nav item is active
-  let isActive = $derived((href: string) => page.url.pathname === href);
+// Determine if a nav item is active
+let isActive = $derived((href: string) => page.url.pathname === href);
 
-  // Toggle for mobile menu (optional usage)
-  let isMobileMenuOpen = $state(false);
+// Toggle for mobile menu (optional usage)
+let isMobileMenuOpen = $state(false);
 </script>
 
 <header class="fixed top-0 z-50 w-full">
@@ -68,7 +66,7 @@
                   isActive(href) ? "text-foreground" : "text-foreground/60"
                 }`}
                 aria-current={isActive(href) ? "page" : undefined}
-                on:click={() => (isMobileMenuOpen = false)}
+                onclick={() => (isMobileMenuOpen = false)}
               >
                 {label}
               </a>
