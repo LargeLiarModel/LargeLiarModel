@@ -5,8 +5,8 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "tsc -p server/tsconfig.json && vite build && npm run build:server",
-		"build:server": "mkdir -p .svelte-kit/output/server && cp -r server/* .svelte-kit/output/server/",
+		"build": "vite build && npm run build:server",
+		"build:server": "tsc -p server/tsconfig.json",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
