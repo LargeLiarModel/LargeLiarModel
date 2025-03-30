@@ -24,6 +24,8 @@
     "format": "biome format --write .",
     "lint": "biome lint .",
     "check": "biome check --apply .",
-    "check:ci": "biome ci ."
+    "check:ci": "biome ci .",
+    "vercel-build": "npm run build:api && npm run build:sk",
+    "build:app": "cd apps/sk && npm run build"
   }
 }
