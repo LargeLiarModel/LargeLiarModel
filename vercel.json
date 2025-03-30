@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "bun install && bun run build",
+  "buildCommand": "cd apps/hono-api && npm install && npm run build && cd ../../apps/sk && npm install && npm run build",
   "outputDirectory": "apps/sk/.svelte-kit/output",
   "builds": [
     {
