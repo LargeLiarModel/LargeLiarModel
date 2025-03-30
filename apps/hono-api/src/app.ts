@@ -6,12 +6,14 @@ import { z } from "zod";
 import { db } from "./drizzle/client";
 import { and, eq, ne, sum } from "drizzle-orm";
 import {
-  Candidates,
-  Candidacies,
-  Committees,
-  PAC_Candidate,
-  PAC_PAC,
+    Candidates,
+    Candidacies,
+    Committees,
+    PAC_Candidate,
+    PAC_PAC,
 } from "./drizzle/schema";
+
+import HTTPException from "hono/http-exception";
 
 import { GoogleGenAI } from "@google/genai";
 import { json, real } from "drizzle-orm/gel-core";
@@ -19,40 +21,42 @@ import { SQLiteColumn } from "drizzle-orm/sqlite-core";
 import { isBinaryOperatorToken } from "typescript";
 import { PgJsonBuilder } from "drizzle-orm/pg-core";
 
+import articles from "./articles.json";
+
 function arrayBufferToBase64(buffer: ArrayBuffer) {
-  let binary = "";
-  const bytes = new Uint8Array(buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
+    let binary = "";
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
 }
 
 const app = new Hono();
 
 // Apply CORS middleware to allow cross-origin requests from the SvelteKit app
 app.use(
-  "/*",
-  cors({
-    origin: ["http://localhost:5173", "http://localhost:4173"], // SvelteKit dev and preview ports
-    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization"],
-    exposeHeaders: ["Content-Length"],
-    maxAge: 600,
-    credentials: true,
-  })
+    "/*",
+    cors({
+        origin: ["http://localhost:5173", "http://localhost:4173"], // SvelteKit dev and preview ports
+        allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allowHeaders: ["Content-Type", "Authorization"],
+        exposeHeaders: ["Content-Length"],
+        maxAge: 600,
+        credentials: true,
+    }),
 );
 
 app.get("/", async (c) => {
-  // const i = Math.floor(Math.random() * 8290);
-  // const cand = await db.select().from(Candidate).where(eq(Candidate.id, i));
-  // return c.json(cand);
-  return c.text("testing please come later");
+    // const i = Math.floor(Math.random() * 8290);
+    // const cand = await db.select().from(Candidate).where(eq(Candidate.id, i));
+    // return c.json(cand);
+    return c.text("testing please come later");
 });
 
 const schema = z.object({
-  body: z.number().gt(0),
+    body: z.number().gt(0),
 });
 
 type quote_data = {
@@ -63,6 +67,7 @@ type quote_data = {
 };
 
 app.get("/quotes", async (c) => {
+
   const num = 5;
   const all_cands = await db.select().from(Candidates);
 
@@ -119,6 +124,7 @@ app.get("/quotes", async (c) => {
   }
 
   return c.json(bios);
+
 });
 
 // Images endpoint that fetches real and "AI-generated" images from different sources
@@ -233,37 +239,151 @@ const images = new Hono().get("/", async (c) => {
       500
     );
   }
+
 });
 
 const quotes = new Hono().get("/", async (c) => {
-  console.log("running");
+    console.log("running");
 
-  if (!process.env.GEMINI_KEY) {
-    return c.text("API key not configured", 500);
-  }
+    if (!process.env.GEMINI_KEY) {
+        return c.text("API key not configured", 500);
+    }
 
-  const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
+    const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
 
-  const response = await genAI.models.generateContent({
-    model: "gemini-2.0-flash",
-    contents: "Explain how AI works",
-    config: {
-      responseModalities: ["TEXT"],
-    },
-  });
+    const response = await genAI.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: "Explain how AI works",
+        config: {
+            responseModalities: ["TEXT"],
+        },
+    });
 
-  return c.json(response);
+    return c.json(response);
 });
 
 // Add a simple test endpoint
 const test = new Hono().get("/", async (c) => {
-  return c.json({ message: "Test endpoint working!" });
+    return c.json({ message: "Test endpoint working!" });
+});
+
+const news = new Hono().get("/", async (c) => {
+    // Randomly choose between real or fake article
+
+    const isReal = Math.random() < 0.5;
+
+    try {
+        if (isReal) {
+            // Select a random real article
+            const randomIndex = Math.floor(Math.random() * articles.length);
+            const article = articles[randomIndex];
+
+            // Return with isReal flag
+            return c.json({
+                title: article.title,
+                source: article.source,
+                publishedAt: article.publishedAt,
+                textContent: article.textContent,
+                isReal: true,
+            });
+        }
+        // Generate fake article using Gemini
+        if (!process.env.GEMINI_KEY) {
+            return c.json(
+                {
+                    message: "API key not configured",
+                },
+                500,
+            );
+        }
+
+        // Initialize Gemini client
+        const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
+
+        // Define prompt for fake article generation
+        const prompt = `Generate a fake but convincing news article (title and first paragraph only) about a current US national news topic. The article should sound completely realistic and be based in contemporary reality.
+
+            Your response should include:
+            - A realistic headline that sounds like it came from a major news outlet
+            - Only the first paragraph of the article (approximately 3-5 sentences)
+            - Content that reflects current real-world context and technologies
+            - A plausible but entirely fictional development or story
+
+            The article should be completely made up but should seem entirely plausible to an average reader. Do not include "fictional" or similar disclaimers in the content itself.
+
+            Format your response as:
+            {
+                "title": "Your convincing headline here",
+                "textContent": "Your realistic first paragraph here."
+            }
+                
+            Use the following JSON schema:
+            {"title": str, "textContent": "string"}`;
+
+        // Generate content using Gemini
+        const result = await genAI.models.generateContent({
+            model: "gemini-2.0-flash",
+            contents: prompt,
+        });
+
+        // Extract the generated content
+        let generatedText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!generatedText) {
+            console.error("Failed to generate fake article");
+            return c.json(
+                {
+                    message: "Failed to generate fake article",
+                },
+                500,
+            );
+        }
+
+        generatedText = generatedText.replace(/```json|```/g, "");
+
+        // Parse the JSON response
+        let fakeArticle;
+
+        try {
+            // Try to parse the response as JSON
+            fakeArticle = JSON.parse(generatedText);
+
+            // Generate fake publication date (within the last week)
+            const now = new Date();
+            const randomDaysAgo = Math.floor(Math.random() * 7);
+            const randomHours = Math.floor(Math.random() * 24);
+            const randomMinutes = Math.floor(Math.random() * 60);
+
+            const fakeDate = new Date(now);
+            fakeDate.setDate(fakeDate.getDate() - randomDaysAgo);
+            fakeDate.setHours(fakeDate.getHours() - randomHours);
+            fakeDate.setMinutes(fakeDate.getMinutes() - randomMinutes);
+
+            // Return the fake article with metadata
+            return c.json({
+                title: fakeArticle.title,
+                publishedAt: fakeDate.toISOString(),
+                textContent: fakeArticle.textContent,
+                isReal: false,
+            });
+        } catch (error) {
+            console.error("Error parsing generated text:", error);
+            return c.json(
+                {
+                    message: "Failed to parse generated text",
+                },
+                500,
+            );
+        }
+    } catch (error) {
+        console.error("Error in /news endpoint:", error);
+    }
 });
 
 const routes = app
-  .route("/images", images)
-  .route("/quotes", quotes)
-  .route("/test", test);
+    .route("/images", images)
+    .route("/quotes", quotes)
+    .route("/news", news);
 
 // Export the app type for RPC client usage
 export type AppType = typeof routes;

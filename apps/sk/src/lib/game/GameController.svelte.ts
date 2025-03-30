@@ -34,11 +34,11 @@ export default class GameController {
                 }),
             );
         });
-        
+
         // Start preloading the first batch of questions and initialize
         this.initialize();
     }
-    
+
     async initialize() {
         try {
             // Preload first batch of questions
@@ -51,25 +51,25 @@ export default class GameController {
             this.isLoading = false;
         }
     }
-    
+
     async preloadContent(startIndex: number, count: number) {
         const endIndex = Math.min(startIndex + count, this.questions.length);
         const loadPromises = [];
-        
+
         for (let i = startIndex; i < endIndex; i++) {
             if (!this.questions[i].content) {
                 loadPromises.push(this.loadQuestionContent(i));
             }
         }
-        
+
         await Promise.all(loadPromises);
     }
 
     async loadQuestionContent(index: number) {
         const question = this.questions[index];
-        
+
         if (question.content) return; // Already loaded
-        
+
         switch (question.type) {
             case QuestionType.StockPhoto:
                 await this.loadStockPhotoContent(index);
@@ -87,34 +87,66 @@ export default class GameController {
                 await this.loadNewsContent(index);
                 break;
             default:
-                console.warn(`No loader implemented for question type: ${question.type}`);
+                console.warn(
+                    `No loader implemented for question type: ${question.type}`,
+                );
                 // Add placeholder content to prevent UI from getting stuck
                 this.addPlaceholderContent(index);
         }
     }
-    
+
     // Placeholder implementations for other content types
     async loadQuoteContent(index: number) {
         try {
             // In a real implementation, this would fetch from an API
             const quotes = [
-                { text: "To be or not to be, that is the question.", isReal: true },
-                { text: "The only thing we have to fear is fear itself.", isReal: true },
-                { text: "Life is what happens when you're busy making other plans.", isReal: true },
-                { text: "Success is not final, failure is not fatal: It is the courage to continue that counts.", isReal: true },
-                { text: "The future belongs to those who believe in the beauty of their dreams.", isReal: true },
-                { text: "The best way to predict the future is to create it.", isReal: true },
-                { text: "Happiness is not something ready-made. It comes from your own actions.", isReal: true },
-                { text: "The greatest glory in living lies not in never falling, but in rising every time we fall.", isReal: true },
-                { text: "The way to get started is to quit talking and begin doing.", isReal: true },
-                { text: "If life were predictable it would cease to be life, and be without flavor.", isReal: true }
+                {
+                    text: "To be or not to be, that is the question.",
+                    isReal: true,
+                },
+                {
+                    text: "The only thing we have to fear is fear itself.",
+                    isReal: true,
+                },
+                {
+                    text: "Life is what happens when you're busy making other plans.",
+                    isReal: true,
+                },
+                {
+                    text: "Success is not final, failure is not fatal: It is the courage to continue that counts.",
+                    isReal: true,
+                },
+                {
+                    text: "The future belongs to those who believe in the beauty of their dreams.",
+                    isReal: true,
+                },
+                {
+                    text: "The best way to predict the future is to create it.",
+                    isReal: true,
+                },
+                {
+                    text: "Happiness is not something ready-made. It comes from your own actions.",
+                    isReal: true,
+                },
+                {
+                    text: "The greatest glory in living lies not in never falling, but in rising every time we fall.",
+                    isReal: true,
+                },
+                {
+                    text: "The way to get started is to quit talking and begin doing.",
+                    isReal: true,
+                },
+                {
+                    text: "If life were predictable it would cease to be life, and be without flavor.",
+                    isReal: true,
+                },
             ];
-            
+
             const randomIndex = Math.floor(Math.random() * quotes.length);
             const isCorrect = quotes[randomIndex].isReal;
-            
+
             this.questions[index].content = {
-                text: quotes[randomIndex].text
+                text: quotes[randomIndex].text,
             };
             this.questions[index].correctAnswer = isCorrect;
         } catch (error) {
@@ -122,20 +154,20 @@ export default class GameController {
             this.addPlaceholderContent(index);
         }
     }
-    
+
     async loadArtContent(index: number) {
         try {
             // Placeholder implementation
             const artPieces = [
                 { imageUrl: "https://example.com/art1.jpg", isReal: true },
-                { imageUrl: "https://example.com/art2.jpg", isReal: true }
+                { imageUrl: "https://example.com/art2.jpg", isReal: true },
             ];
-            
+
             const randomIndex = Math.floor(Math.random() * artPieces.length);
             const isCorrect = artPieces[randomIndex].isReal;
-            
+
             this.questions[index].content = {
-                imageUrl: artPieces[randomIndex].imageUrl
+                imageUrl: artPieces[randomIndex].imageUrl,
             };
             this.questions[index].correctAnswer = isCorrect;
         } catch (error) {
@@ -143,21 +175,21 @@ export default class GameController {
             this.addPlaceholderContent(index);
         }
     }
-    
+
     async loadMusicContent(index: number) {
         try {
             // Placeholder implementation
             const musicPieces = [
                 { artist: "Artist 1", song: "Song 1", isReal: true },
-                { artist: "Artist 2", song: "Song 2", isReal: false }
+                { artist: "Artist 2", song: "Song 2", isReal: false },
             ];
-            
+
             const randomIndex = Math.floor(Math.random() * musicPieces.length);
             const isCorrect = musicPieces[randomIndex].isReal;
-            
+
             this.questions[index].content = {
                 artist: musicPieces[randomIndex].artist,
-                song: musicPieces[randomIndex].song
+                song: musicPieces[randomIndex].song,
             };
             this.questions[index].correctAnswer = isCorrect;
         } catch (error) {
@@ -165,45 +197,73 @@ export default class GameController {
             this.addPlaceholderContent(index);
         }
     }
-    
+
     async loadNewsContent(index: number) {
         try {
-            // Placeholder implementation
-            const newsItems = [
-                { headline: "Breaking News 1", source: "Source 1", isReal: true },
-                { headline: "Breaking News 2", source: "Source 2", isReal: false }
-            ];
-            
-            const randomIndex = Math.floor(Math.random() * newsItems.length);
-            const isCorrect = newsItems[randomIndex].isReal;
-            
-            this.questions[index].content = {
-                headline: newsItems[randomIndex].headline,
-                source: newsItems[randomIndex].source
+            const response = await client.news.$get();
+
+            if (!response.ok) {
+                throw new Error(
+                    `API responded with status: ${response.status}`,
+                );
+            }
+
+            const data = (await response.json()) as {
+                isReal: boolean;
+                title: string;
+                source?: string;
+                textContent: string;
+                publishedAt: string;
             };
-            this.questions[index].correctAnswer = isCorrect;
+
+            if (data.isReal) {
+                this.questions[index].content = {
+                    headline: data.title,
+                    source: data.source,
+                    text: data.textContent,
+                    date: data.publishedAt,
+                };
+
+                this.questions[index].correctAnswer = true;
+            } else {
+                this.questions[index].content = {
+                    headline: data.title,
+                    text: data.textContent,
+                    date: data.publishedAt,
+                };
+
+                this.questions[index].correctAnswer = false;
+            }
         } catch (error) {
             console.error("Error loading news content:", error);
             this.addPlaceholderContent(index);
         }
     }
-    
+
     // Add placeholder content to prevent UI from getting stuck
     addPlaceholderContent(index: number) {
         const question = this.questions[index];
-        
+
         switch (question.type) {
             case QuestionType.Quote:
                 question.content = { text: "Placeholder quote text" };
                 break;
             case QuestionType.Art:
-                question.content = { imageUrl: "https://via.placeholder.com/300" };
+                question.content = {
+                    imageUrl: "https://via.placeholder.com/300",
+                };
                 break;
             case QuestionType.Music:
-                question.content = { artist: "Placeholder Artist", song: "Placeholder Song" };
+                question.content = {
+                    artist: "Placeholder Artist",
+                    song: "Placeholder Song",
+                };
                 break;
             case QuestionType.News:
-                question.content = { headline: "Placeholder Headline", source: "Placeholder Source" };
+                question.content = {
+                    headline: "Placeholder Headline",
+                    source: "Placeholder Source",
+                };
                 break;
             case QuestionType.StockPhoto:
                 // For stock photos, we can't easily create placeholder base64 data
@@ -214,7 +274,7 @@ export default class GameController {
                 // Generic placeholder
                 question.content = { text: "Placeholder content" };
         }
-        
+
         // Set a default correctAnswer if not already set
         if (question.correctAnswer === undefined) {
             question.correctAnswer = Math.random() > 0.5;
@@ -224,30 +284,32 @@ export default class GameController {
     async loadStockPhotoContent(index: number) {
         try {
             const response = await client.images.$get();
-            
+
             if (!response.ok) {
-                throw new Error(`API responded with status: ${response.status}`);
+                throw new Error(
+                    `API responded with status: ${response.status}`,
+                );
             }
-            
+
             const data = await response.json();
-            
+
             // Check if the "generated" image is actually AI-generated
             // The API returns isAIGenerated=true when the image is AI-generated, undefined/false when it's a fallback
             // Use type assertion to handle the property that might not be in the type definition
             // biome-ignore lint/suspicious/noExplicitAny: The API response includes properties not in the type definition
-            const apiResponse = data as any; 
+            const apiResponse = data as any;
             const isActuallyAIGenerated = apiResponse.isAIGenerated === true;
-            
+
             if (Math.random() > 0.5 && data.realImageData?.inlineData?.data) {
                 // Use the real image
                 this.questions[index].content = {
-                    imageData: data.realImageData.inlineData.data
+                    imageData: data.realImageData.inlineData.data,
                 };
                 this.questions[index].correctAnswer = true;
             } else if (data.genImageData?.inlineData?.data) {
                 // Use the "generated" image, but set correctAnswer based on whether it's actually AI-generated
                 this.questions[index].content = {
-                    imageData: data.genImageData.inlineData.data
+                    imageData: data.genImageData.inlineData.data,
                 };
                 this.questions[index].correctAnswer = !isActuallyAIGenerated; // Only false if truly AI-generated
             } else {
@@ -276,10 +338,12 @@ export default class GameController {
         }
 
         const currentQuestion = this.questions[this.currentQuestionIndex];
-        
+
         // Make sure we have a valid question with content before proceeding
         if (!currentQuestion || !currentQuestion.content) {
-            console.warn("Attempted to answer a question that isn't fully loaded");
+            console.warn(
+                "Attempted to answer a question that isn't fully loaded",
+            );
             return;
         }
 
@@ -295,21 +359,24 @@ export default class GameController {
         });
 
         this.currentQuestionIndex++;
-        
+
         // Set loading state while we preload the next batch
         const nextIndex = this.currentQuestionIndex;
-        if (nextIndex < this.questions.length && !this.questions[nextIndex].content) {
+        if (
+            nextIndex < this.questions.length &&
+            !this.questions[nextIndex].content
+        ) {
             // Only set loading if the next question's content isn't already loaded
             this.isLoading = true;
         }
-        
+
         // Preload more content when we advance
         this.preloadContent(this.currentQuestionIndex, 3) // Always keep 3 questions ahead loaded
             .then(() => {
                 // Clear loading state when preloading is done
                 this.isLoading = false;
             })
-            .catch(error => {
+            .catch((error) => {
                 console.error("Error preloading content:", error);
                 this.isLoading = false;
             });
@@ -353,7 +420,8 @@ export default class GameController {
 
                 if (
                     index < this.userAnswers.length &&
-                    this.userAnswers[index].userGuess === this.questions[index].correctAnswer
+                    this.userAnswers[index].userGuess ===
+                        this.questions[index].correctAnswer
                 ) {
                     acc[type].correct++;
                 }

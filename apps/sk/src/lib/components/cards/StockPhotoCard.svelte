@@ -1,5 +1,6 @@
 <script lang="ts">
 import Button from "../ui/button/button.svelte";
+    import LoadingSpinner from "../ui/LoadingSpinner.svelte";
 import type { Question } from "$lib/game/Question.svelte";
 
 let { currentQuestion, setAnswer } = $props();
@@ -30,11 +31,6 @@ let hasValidImageData = $derived(
       </div>
     </div>
   {:else}
-    <div class="p-10 flex flex-col items-center">
-      <h2 class="text-xl mb-4">Loading image...</h2>
-      <div class="w-80 h-80 bg-gray-200 rounded-lg flex items-center justify-center">
-        <p class="text-gray-500">Image loading...</p>
-      </div>
-    </div>
+  <LoadingSpinner />
   {/if}
 </div>

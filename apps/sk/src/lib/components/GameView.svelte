@@ -20,6 +20,7 @@ import StockPhotoCard from "./cards/StockPhotoCard.svelte";
 import GameEndScreen from "./GameEndScreen.svelte";
 import client from "$lib/client";
 import { Content } from "./ui/sheet";
+    import NewsCard from "./cards/NewsCard.svelte";
 
 let { config } = $props();
 
@@ -97,10 +98,8 @@ let gameResults = $derived.by(() => {
                     <AudioCard currentQuestion={currentQuestion} setAnswer={(e: boolean) => processAnswer(e)} />
                 {:else if currentQuestion.type === QuestionType.StockPhoto && currentQuestion.content}
                     <StockPhotoCard currentQuestion={currentQuestion} setAnswer={(e: boolean) => processAnswer(e)} />
-                {:else}
-                    <div class="p-10">
-                        <h2 class="text-xl">Loading question content...</h2>
-                    </div>
+                {:else if currentQuestion.type === QuestionType.News && currentQuestion.content}
+                    <NewsCard currentQuestion={currentQuestion} setAnswer={(e: boolean) => processAnswer(e)} />
                 {/if}
             {:else}
                 <h2>Loading...</h2>
