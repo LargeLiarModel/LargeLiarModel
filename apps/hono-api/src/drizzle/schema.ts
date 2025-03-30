@@ -5,6 +5,7 @@ import {
   sqliteTable,
   primaryKey,
 } from "drizzle-orm/sqlite-core";
+import { number } from "zod";
 
 export const Candidates = sqliteTable("Candidates", {
   id: integer().primaryKey({ autoIncrement: true }),
@@ -49,6 +50,18 @@ export const Committees = sqliteTable("Committees", {
   Active: integer({ mode: "boolean" }),
 });
 
+export const Individual_Candidates = sqliteTable(
+  "Individual_Candidates",
+  {
+    Cycle: integer(),
+    candID: text()
+      .references(() => Candidates.CID)
+      .notNull(),
+    contributions: real().notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.Cycle, table.FECTransID] })]
+);
+
 // https://www.opensecrets.org/resources/datadictionary/Data%20Dictionary%20for%20PAC%20to%20Cands%20Data.htm
 export const PAC_Candidate = sqliteTable(
   "PAC_Candidate",
@@ -74,7 +87,7 @@ export const PAC_PAC = sqliteTable(
   "PAC_PAC",
   {
     Cycle: integer(),
-    FECRecNo: text().primaryKey(),
+    FECRecNo: text(),
     FilerID: text(),
     DonorCmte: text(),
     ContribLendTrans: text(),
