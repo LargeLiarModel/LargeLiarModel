@@ -1,4 +1,4 @@
-import type { Question } from "./Question";
+import { Question } from "./Question.svelte";
 import { GameStatus } from "./types";
 import type { GameConfig } from "./types";
 
@@ -24,43 +24,14 @@ export default class GameController {
 
     constructor(config: GameConfig) {
         this.config = config;
-    }
-
-    async initGame(): Promise<void> {
-        try {
-            this.questions = await this.fetchQuestions();
-            this.gameState = GameStatus.InProgress;
-            this.currentQuestionIndex = 0;
-            this.score = 0;
-            this.userAnswers = [];
-        } catch (error) {
-            console.error("Failed to initialize game:", error);
-            throw new Error("Failed to load questions from API");
-        }
-    }
-
-    async fetchQuestions(): Promise<Question[]> {
-        try {
-            const response = await fetch("/api/questions", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    count: this.config.totalQuestions,
-                    types: this.config.questionTypes,
+        this.config.questionTypes.forEach((type, i) => {
+            this.questions.push(
+                new Question({
+                    id: i.toString(),
+                    type: type,
                 }),
-            });
-
-            if (!response.ok) {
-                throw new Error(`API error: ${response.status}`);
-            }
-
-            return response.json();
-        } catch (error) {
-            console.error("Failed to fetch questions:", error);
-            throw new Error("Failed to load questions from API");
-        }
+            );
+        });
     }
 
     getCurrentQuestion(): Question | null {
