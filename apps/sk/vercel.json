@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "framework": "sveltekit",
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "server/index.js"
+    }
+  ]
+}

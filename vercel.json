@@ -1,18 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "cd sk && npm install && npm run build",
-  "outputDirectory": "sk/.svelte-kit/output",
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "sk/.svelte-kit/output/server/index.js"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/.*",
-      "dest": "sk/.svelte-kit/output/index.js"
-    }
-  ]
+  "framework": "sveltekit",
+  "monorepo": true,
+  "projectSettings": {
+    "framework": "sveltekit",
+    "buildCommand": null,
+    "devCommand": null,
+    "installCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": "apps/sk"
+  }
 }
