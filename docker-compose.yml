@@ -1,11 +1,9 @@
-version: '3'
-
 services:
   backend:
     build:
       context: .
       dockerfile: Dockerfile
-    command: sh -c "bun run build:api && bun run dev:api"
+    command: sh -c "bun run dev:api"
     ports:
       - "3000:3000"
     volumes:
@@ -22,7 +20,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: sh -c "bun run build:sk && bun run dev:sk"
+    command: sh -c "bun run dev:sk"
     ports:
       - "5173:5173"
     volumes:

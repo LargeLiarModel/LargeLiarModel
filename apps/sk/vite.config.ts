@@ -12,6 +12,7 @@ export default defineConfig({
 	server: {
 		port: 5173,
 		host: true,
+		allowedHosts: ["largeliarmodel.tech"],
 		proxy: {
 			// Proxy API requests to the Hono server during development
 			'/api': {
