@@ -19,7 +19,7 @@
     "build:sk": "bun run --filter=@largeliarmodel/sveltekit-app build",
     "build": "bun run build:api && bun run build:sk",
     "dev:api": "bun run --filter=@largeliarmodel/hono-api dev",
-    "dev:sk": "bun run --filter=@largeliarmodel/sveltekit-app dev",
+    "dev:sk": "cd apps/sk && bun run dev",
     "dev": "bun run dev:api & bun run dev:sk",
     "format": "biome format --write .",
     "lint": "biome lint .",

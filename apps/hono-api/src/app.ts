@@ -99,117 +99,106 @@ app.get("/quotes", async (c) => {
   // );
 });
 
+// Images endpoint that fetches real and "AI-generated" images from different sources
 const images = new Hono().get(
   "/",
-  validator("form", async (value, c) => {
-    // const parsed = schema.safeParse(value);
-    // if (!parsed.success) {
-    //   return c.text("Invalid!", 401);
-    // }
-    const num = 10;
-    const max = 12789;
-    const page_num = Math.floor(Math.random() * max);
+  async (c) => {
+    try {
+      console.log("Images endpoint called");
 
-    const art_res = await fetch(
-      `https://api.artic.edu/api/v1/artworks?page=${page_num}&limit=10`
-    );
-    const art_body = await art_res.json();
-    const art_data = art_body.data;
-    const imgs = [];
+      // Fetch a real image from Unsplash - nature category
+      const realImageResponse = await fetch("https://picsum.photos/800/600?random=1");
+      const realImageBuffer = await realImageResponse.arrayBuffer();
+      const realImageData = arrayBufferToBase64(realImageBuffer);
 
-    for (let i = 0; i < 1; i++) {
-      const curr_id = art_data[i].image_id;
-      const img_res = await fetch(
-        `https://www.artic.edu/iiif/2/${curr_id}/full/843,/0/default.jpg`
-      );
+      // Define the type for genImageData
+      let genImageData: {
+        inlineData: {
+          data: string;
+          mimeType: string;
+        }
+      } | undefined;
+      let useAIGenerated = true;
 
-      console.log(img_res);
-      const buff = await img_res.arrayBuffer();
-      imgs.push({
-        inlineData: { data: arrayBufferToBase64(buff), mimeType: "image/jpeg" },
+      try {
+        // Try to generate an AI image using Gemini
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
+
+        // Use a simpler prompt that's more likely to succeed
+        const result = await ai.models.generateContent({
+          model: "gemini-2.0-flash-exp-image-generation",
+          contents: [{
+            parts: [{
+              text: "Generate a beautiful image as similar as possible to the attached image. It should prioritize accuracy and similarity to the original. However, it should be discernably different. As similar looking as possible, but not a complete facsimile. Key elements should remain, but be present in the image in a different capacity."
+            }, {
+              inlineData: {
+                data: realImageData,
+                mimeType: "image/jpeg"
+              }
+            }]
+          }],
+          config: {
+            responseModalities: ["TEXT", "IMAGE"],
+          }
+        });
+
+        const res = result.candidates?.[0]?.content?.parts ?? [];
+
+        for (const part of res) {
+          if (part.inlineData?.data && part.inlineData?.mimeType) {
+            genImageData = {
+              inlineData: {
+                data: part.inlineData.data as string,
+                mimeType: part.inlineData.mimeType as string
+              }
+            };
+            break;
+          }
+        }
+      } catch (aiError) {
+        // If there's an error with the AI generation, log it and use fallback
+        console.error("Error generating AI image:", aiError);
+        useAIGenerated = false;
+      }
+
+      // If AI generation failed, fetch a second image from Unsplash as a fallback
+      if (!useAIGenerated) {
+        try {
+          // Fetch a second image from Unsplash with a different category
+          const genImageResponse = await fetch("https://source.unsplash.com/random/800x600/?abstract");
+          const genImageBuffer = await genImageResponse.arrayBuffer();
+          const genImageBase64 = arrayBufferToBase64(genImageBuffer);
+
+          genImageData = {
+            inlineData: {
+              data: genImageBase64,
+              mimeType: "image/jpeg"
+            }
+          };
+        } catch (fallbackError) {
+          console.error("Error fetching fallback image:", fallbackError);
+          throw new Error("Failed to generate or fetch fallback image");
+        }
+      }
+
+      // Return both images
+      return c.json({
+        genImageData,
+        realImageData: {
+          inlineData: {
+            data: realImageData,
+            mimeType: "image/jpeg"
+          }
+        },
+        isAIGenerated: useAIGenerated
       });
+    } catch (error) {
+      console.error("Error in images endpoint:", error);
+      return c.json({
+        error: error instanceof Error ? error.message : String(error)
+      }, 500);
     }
-
-    const prompt = `## Image Analysis and Description Task for AI Recreation
-
-**Goal:** Analyze each image in the provided list and generate a detailed, structured textual description that another AI model can use to attempt to recreate the image.
-
-**For each image, follow these steps and include the following information in your description:**
-
-**1. Overall Impression/Subject:**
-   - Briefly state the main subject or scene depicted in the image.
-   - What is the dominant mood or feeling conveyed? (e.g., peaceful, energetic, mysterious)
-
-**2. Composition and Framing:**
-   - Describe the overall composition (e.g., close-up, wide shot, landscape, portrait).
-   - Note the rule of thirds or any other noticeable compositional elements.
-   - Describe the viewpoint (e.g., eye-level, high angle, low angle).
-
-**3. Objects and Elements:**
-   - List the key objects and elements present in the image.
-   - For each object, describe its:
-     - **Type:** (e.g., tree, person, building, cloud, table)
-     - **Shape:** (e.g., round, rectangular, curved, jagged)
-     - **Size and Proportion:** (relative to other objects and the overall frame)
-     - **Position and Orientation:** (e.g., center, left, top-right, facing forward, angled)
-     - **Material/Texture (if discernible):** (e.g., smooth, rough, metallic, wooden, fluffy)
-
-**4. Color Palette:**
-   - Describe the dominant colors present in the image.
-   - Note any significant color contrasts or harmonies.
-   - Mention the overall color temperature (e.g., warm, cool).
-
-**5. Lighting:**
-   - Describe the light source (e.g., natural sunlight, artificial light, moonlight).
-   - Note the direction of the light (e.g., from the left, backlighting, overhead).
-   - Describe the quality of the light (e.g., soft, harsh, diffused).
-   - Identify any significant shadows and their characteristics.
-
-**6. Style and Details (if applicable):**
-   - Note any apparent artistic style (e.g., photorealistic, abstract, cartoonish, painterly).
-   - Describe any specific details or textures that contribute to the image's unique character (e.g., patterns, reflections, brushstrokes).
-
-**7. Relationships and Interactions:**
-   - If multiple objects or entities are present, describe their spatial relationships and any apparent interactions.
-
-**8. Negative Space:**
-   - Briefly describe the areas of empty or less detailed space and how they contribute to the overall image.
-
-**Output Format:**
-
-For each image in the list, provide a description clearly labeled with the image number or identifier. Use clear and concise language. Avoid ambiguity and subjective interpretations where possible. Focus on concrete visual details.`;
-
-    if (!process.env.GEMINI_KEY) {
-      return c.text("API key not configured", 500);
-    }
-    const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
-
-    const generatedDescription = await genAI.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: [prompt, imgs[0]],
-      config: {
-        responseModalities: ["TEXT"],
-      },
-    });
-
-    const generatedDescriptionText =
-      generatedDescription?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    const generatedImage = await genAI.models.generateContent({
-      model: "gemini-2.0-flash-exp-image-generation",
-      contents: `Generate an image fulfilling the following description: ${generatedDescriptionText}`,
-      config: {
-        responseModalities: ["TEXT", "IMAGE"],
-      },
-    });
-
-    const imageBinary =
-      generatedImage?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-    return c.json({
-      genImageData: imageBinary,
-      realImageData: imgs[0],
-    });
-  })
+  }
 );
 
 const quotes = new Hono().get("/", async (c) => {
@@ -232,8 +221,20 @@ const quotes = new Hono().get("/", async (c) => {
   return c.json(response);
 });
 
-const routes = app.route("/images", images).route("/quotes", quotes);
+// Add a simple test endpoint
+const test = new Hono().get("/", async (c) => {
+  return c.json({ message: "Test endpoint working!" });
+});
+
+const routes = app.route("/images", images).route("/quotes", quotes).route("/test", test);
 
 // Export the app type for RPC client usage
 export type AppType = typeof routes;
-export default app;
+
+// Export the app with Bun serve configuration
+export default {
+  port: 3000,
+  fetch: app.fetch,
+  // Set timeout to maximum allowed value (255 seconds)
+  idleTimeout: 255
+};

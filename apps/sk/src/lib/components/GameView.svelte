@@ -62,6 +62,19 @@ gc.questions = [
         },
         correctAnswer: true,
     }),
+    // Add an image question to test the ImageCard component
+    new Question({
+        id: "4",
+        type: QuestionType.Art,
+        content: {
+            type: "image",
+            data: {
+                // The actual image data will be fetched by the ImageCard component
+                imageUrl: "placeholder"
+            },
+        },
+        correctAnswer: true,
+    }),
 ];
 </script>
 
