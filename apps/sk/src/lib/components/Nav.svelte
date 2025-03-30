@@ -1,17 +1,18 @@
 <script lang="ts">
-import { Button } from "$lib/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "$lib/components/ui/sheet";
-import { Menu } from "@lucide/svelte";
-import { page } from "$app/state";
+  import { Button, buttonVariants } from "$lib/components/ui/button";
+  import { Sheet, SheetContent, SheetTrigger } from "$lib/components/ui/sheet";
+  import { Menu } from "@lucide/svelte";
+  import { page } from "$app/state";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
 
-// Define the navigation items
-const navItems = [{ label: "", href: "/" }];
+  // Define the navigation items
+  const navItems = [{ label: "", href: "/" }];
 
-// Determine if a nav item is active
-let isActive = $derived((href: string) => page.url.pathname === href);
+  // Determine if a nav item is active
+  let isActive = $derived((href: string) => page.url.pathname === href);
 
-// Toggle for mobile menu (optional usage)
-let isMobileMenuOpen = $state(false);
+  // Toggle for mobile menu (optional usage)
+  let isMobileMenuOpen = $state(false);
 </script>
 
 <header class="fixed top-0 z-50 w-full">
@@ -42,8 +43,43 @@ let isMobileMenuOpen = $state(false);
 
     <!-- Right Side Actions -->
     <div class="hidden md:flex items-center space-x-2">
-      <Button variant="link" size="sm" href="/signin">Instructions</Button>
-      <Button variant="link" size="sm" href="/signup">Learn More</Button>
+      <AlertDialog.Root>
+        <AlertDialog.Trigger class={buttonVariants({ variant: "link" })}>
+          Instructions
+        </AlertDialog.Trigger>
+        <AlertDialog.Content>
+          <AlertDialog.Header>
+            <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+            <AlertDialog.Description>
+              This action cannot be undone. This will permanently delete your
+              account and remove your data from our servers.
+            </AlertDialog.Description>
+          </AlertDialog.Header>
+          <AlertDialog.Footer>
+            <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+            <AlertDialog.Action>Continue</AlertDialog.Action>
+          </AlertDialog.Footer>
+        </AlertDialog.Content>
+      </AlertDialog.Root>
+
+      <AlertDialog.Root>
+        <AlertDialog.Trigger class={buttonVariants({ variant: "link" })}>
+          About
+        </AlertDialog.Trigger>
+        <AlertDialog.Content>
+          <AlertDialog.Header>
+            <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+            <AlertDialog.Description>
+              This action cannot be undone. This will permanently delete your
+              account and remove your data from our servers.
+            </AlertDialog.Description>
+          </AlertDialog.Header>
+          <AlertDialog.Footer>
+            <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+            <AlertDialog.Action>Continue</AlertDialog.Action>
+          </AlertDialog.Footer>
+        </AlertDialog.Content>
+      </AlertDialog.Root>
     </div>
 
     <!-- Mobile Menu Button -->
