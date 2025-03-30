@@ -11,17 +11,16 @@ interface GameState {
     progress: number;
 }
 
-export class GameController {
-    private config: GameConfig;
-    private questions: Question[] = [];
-    private currentQuestionIndex = 0;
-    private score = 0;
-    private gameState: GameStatus = GameStatus.NotStarted;
-    private userAnswers: {
+export default class GameController {
+    config: GameConfig;
+    questions: Question[] = $state([]);
+    currentQuestionIndex = $state(0);
+    score = $state(0);
+    gameState: GameStatus = $state(GameStatus.InProgress);
+    userAnswers: {
         questionId: string;
-        userGuessedAI: boolean;
-        correct: boolean;
-    }[] = [];
+        userGuess: boolean;
+    }[] = $state([]);
 
     constructor(config: GameConfig) {
         this.config = config;
@@ -40,7 +39,7 @@ export class GameController {
         }
     }
 
-    private async fetchQuestions(): Promise<Question[]> {
+    async fetchQuestions(): Promise<Question[]> {
         try {
             const response = await fetch("/api/questions", {
                 method: "POST",
@@ -72,18 +71,14 @@ export class GameController {
         return this.questions[this.currentQuestionIndex];
     }
 
-    submitAnswer(userGuessedAi: boolean): {
-        correct: boolean;
-        explanation?: string;
-        isAiGenerated: boolean;
-    } {
+    submitAnswer(userGuess: boolean) {
         if (this.gameState !== GameStatus.InProgress) {
             throw new Error("Game is not in progress");
         }
 
         const currentQuestion = this.questions[this.currentQuestionIndex];
 
-        const correct = userGuessedAi === currentQuestion.isAiGenerated;
+        const correct = userGuess === currentQuestion.correctAnswer;
 
         if (correct) {
             this.score++;
@@ -91,8 +86,7 @@ export class GameController {
 
         this.userAnswers.push({
             questionId: currentQuestion.id,
-            userGuessedAI: userGuessedAi,
-            correct,
+            userGuess: userGuess,
         });
 
         this.currentQuestionIndex++;
@@ -101,11 +95,7 @@ export class GameController {
             this.gameState = GameStatus.Ended;
         }
 
-        return {
-            correct,
-            explanation: currentQuestion.explanation,
-            isAiGenerated: currentQuestion.isAiGenerated,
-        };
+        return;
     }
 
     getGameState(): GameState {
