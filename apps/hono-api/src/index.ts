@@ -4,10 +4,10 @@ import { cors } from "hono/cors";
 import { z } from "zod";
 
 import { db } from "../src/drizzle/client";
-import { eq } from "drizzle-orm";
+import { eq, ne, sum, and, or, not } from "drizzle-orm";
 import {
   Candidacies,
-  Candidate,
+  Candidates,
   Committees,
   PAC_Candidate,
   PAC_PAC,
@@ -28,11 +28,43 @@ function arrayBufferToBase64(buffer: ArrayBuffer) {
 
 const app = new Hono();
 
-app.get("/", async (c) => {
-  // const i = Math.floor(Math.random() * 8290);
-  // const cand = await db.select().from(Candidate).where(eq(Candidate.id, i));
-  // return c.json(cand);
-  return c.text("testing please come later");
+app.get("/twin/quotes", async (c) => {
+  const i = Math.floor(Math.random() * 32);
+  const cand_list = await db
+    .select()
+    .from(Candidates)
+    .where(eq(Candidates.id, i));
+  const cand = cand_list[0];
+  cand.CID;
+  // const cand_list = await db.select().from(Candidates);
+  // let out = "";
+  // for (let i = 0; i < cand_list.length; i++) {
+  //   let cand = cand_list[i];
+  //   const total = await db
+  //     .select({ value: sum(PAC_Candidate.Amount) })
+  //     .from(PAC_Candidate)
+  //     .where(
+  //       and(
+  //         eq(PAC_Candidate.CID, cand.CID),
+  //         and(ne(PAC_Candidate.Type, "24A"), ne(PAC_Candidate.Type, "24N"))
+  //       )
+  //     );
+  //   out += `${cand.Firstlast}, had $${total[0].value} spent on there behalf during the 2022 election cycle\n`;
+  // }
+  cand = cand_list[0];
+  const total = await db
+    .select({ value: sum(PAC_Candidate.Amount) })
+    .from(PAC_Candidate)
+    .where(
+      and(
+        eq(PAC_Candidate.CID, cand.CID),
+        and(ne(PAC_Candidate.Type, "24A"), ne(PAC_Candidate.Type, "24N"))
+      )
+    );
+
+  // return c.text(
+  //   `${cand.Firstlast}, had $${total[0].value} spent on there behalf during the 2022 election cycle`
+  // );
 });
 
 const schema = z.object({
@@ -138,8 +170,6 @@ app.get("/twin/quotes", async (c) => {
 
   return c.json(response);
 });
-
-app.get();
 
 export type AppType = typeof app;
 export default app;

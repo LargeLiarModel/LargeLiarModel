@@ -6,7 +6,7 @@ import {
   primaryKey,
 } from "drizzle-orm/sqlite-core";
 
-export const Candidate = sqliteTable("Candidate", {
+export const Candidates = sqliteTable("Candidates", {
   id: integer().primaryKey({ autoIncrement: true }),
   CID: text().notNull(),
   Firstlast: text().notNull(),
@@ -18,7 +18,7 @@ export const Candidacies = sqliteTable(
   {
     Cycle: integer(),
     FECCandID: text(),
-    CID: text().references(() => Candidate.CID, { onDelete: "cascade" }),
+    CID: text().references(() => Candidates.CID, { onDelete: "cascade" }),
     Party: text(),
     DistIDRunFor: text(),
     DistIDCurr: text(),
@@ -56,8 +56,8 @@ export const PAC_Candidate = sqliteTable(
     Cycle: integer(),
     FECRecNo: text().primaryKey(),
     PACID: text().references(() => Committees.CmteID, { onDelete: "cascade" }),
-    CID: text().references(() => Candidate.CID, { onDelete: "cascade" }),
-    Amount: real(),
+    CID: text().references(() => Candidates.CID, { onDelete: "cascade" }),
+    Amount: real().notNull(),
     Date: text(),
     RealCode: text(),
     Type: text(),
