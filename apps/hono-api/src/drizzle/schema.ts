@@ -7,8 +7,9 @@ import {
 } from "drizzle-orm/sqlite-core";
 
 export const Candidate = sqliteTable("Candidate", {
-  CID: text().primaryKey(),
-  Firstlast: text(),
+  id: integer().primaryKey({ autoIncrement: true }),
+  CID: text().notNull(),
+  Firstlast: text().notNull(),
 });
 
 // https://www.opensecrets.org/resources/datadictionary/Data%20Dictionary%20Candidates%20Data.htm
