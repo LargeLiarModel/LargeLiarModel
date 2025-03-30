@@ -90,7 +90,7 @@ function handleImageClick(isRealImage: boolean): void {
     </div>
   {/if}
   
-  <div class="flex flex-row justify-center space-x-8 m-2 w-full h-100">
+  <div class="flex flex-row justify-center m-2 w-full h-100">
     <div class="flex flex-col items-center">
       <button 
         onclick={() => handleImageClick(realImageOnLeft)} 

@@ -80,10 +80,10 @@ let gameResults = $derived.by(() => {
         />
     {:else}
         <div class="flex flex-col items-center">
-            <Logo />
+            <Logo isLoading={gc.isLoading} />
             {#if gc.isLoading}
                 <div class="p-10">
-                    <h2 class="text-xl">Loading game content...</h2>
+                    <h2 class="text-xl animate-pulse">Loading game content...</h2>
                 </div>
             {:else if currentQuestion}
                 <h2 class="text-xs m-2 px-2 font-semibold flex justify-between w-full">

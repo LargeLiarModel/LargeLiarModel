@@ -263,10 +263,6 @@ const quotes = new Hono().get("/", async (c) => {
     return c.json(response);
 });
 
-// Add a simple test endpoint
-const test = new Hono().get("/", async (c) => {
-    return c.json({ message: "Test endpoint working!" });
-});
 
 const news = new Hono().get("/", async (c) => {
     // Randomly choose between real or fake article
