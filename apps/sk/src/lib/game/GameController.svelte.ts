@@ -157,21 +157,43 @@ export default class GameController {
 
     async loadArtContent(index: number) {
         try {
-            // Placeholder implementation
-            const artPieces = [
-                { imageUrl: "https://example.com/art1.jpg", isReal: true },
-                { imageUrl: "https://example.com/art2.jpg", isReal: true },
-            ];
+            const response = await fetch("https://testing.rushil.land");
 
-            const randomIndex = Math.floor(Math.random() * artPieces.length);
-            const isCorrect = artPieces[randomIndex].isReal;
+            console.log("response ", response);
 
-            this.questions[index].content = {
-                imageUrl: artPieces[randomIndex].imageUrl,
+            if (!response.ok) {
+                throw new Error(
+                    `API responded with status: ${response.status}`,
+                );
+            }
+
+            const data = (await response.json()) as {
+                fake_image: string;
+                image_id: number;
+                real_image: string;
             };
-            this.questions[index].correctAnswer = isCorrect;
+
+            if (Math.random() < 0.5 && data.real_image) {
+                this.questions[index].content = {
+                    realImage: data.real_image,
+                    fakeImage: data.fake_image,
+                    correctAnswer: true,
+                };
+                this.questions[index].correctAnswer = true;
+            } else if (data.fake_image) {
+                this.questions[index].content = {
+                    realImage: data.real_image,
+                    fakeImage: data.fake_image,
+                    correctAnswer: false,
+                };
+                this.questions[index].correctAnswer = false;
+            } else {
+                console.warn("No valid image data received from API");
+                this.addPlaceholderContent(index);
+            }
         } catch (error) {
-            console.error("Error loading art content:", error);
+            console.error("Error loading stock photo content:", error);
+            // Add placeholder content on error to prevent UI from getting stuck
             this.addPlaceholderContent(index);
         }
     }

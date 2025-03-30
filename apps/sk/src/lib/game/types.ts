@@ -27,7 +27,9 @@ export interface QuoteContent {
 }
 
 export interface ArtContent {
-    imageUrl: string;
+    realImage: string;
+    fakeImage: string;
+    correctAnswer: boolean;
 }
 
 export interface MusicContent {

@@ -1,21 +1,20 @@
 <script>
+import { Question } from "$lib/game/Question.svelte";
 import { createGameConfig, QuestionType } from "$lib/game/types";
 import Button from "./ui/button/button.svelte";
 
 let { setConfig } = $props();
 
-let config = createGameConfig(10, [
-    QuestionType.News,
+let config = createGameConfig(12, [
+    QuestionType.StockPhoto,
+    QuestionType.StockPhoto,
     QuestionType.StockPhoto,
     QuestionType.News,
-    QuestionType.StockPhoto,
     QuestionType.News,
-    QuestionType.StockPhoto,
     QuestionType.News,
-    QuestionType.StockPhoto,
-    QuestionType.News,
-    QuestionType.StockPhoto,
-    QuestionType.News,
+    QuestionType.Art,
+    QuestionType.Art,
+    QuestionType.Art,
 ]);
 </script>
 <div class="flex flex-col items-center justify-center gap-6">
