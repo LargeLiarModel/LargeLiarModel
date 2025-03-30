@@ -45,9 +45,9 @@ let { currentQuestion, setAnswer } = $props();
 
 <div class="bg-white flex flex-col justify-center p-10 h-full rounded-lg mb-4">
   {#if currentQuestion.content} 
-    <h1 class="font-serif text-4xl">{currentQuestion.content.headline}</h1>
+    <h1 class="font-serif text-xl md:text-4xl">{currentQuestion.content.headline}</h1>
     <i class="text-xs mb-4">{formatDate(currentQuestion.content.date)}</i>
-    <p class="line-clamp-5">{currentQuestion.content.text}</p>
+    <p class="line-clamp-5 md:line-clamp-5">{currentQuestion.content.text}</p>
     {:else}
   <LoadingSpinner />
   {/if}

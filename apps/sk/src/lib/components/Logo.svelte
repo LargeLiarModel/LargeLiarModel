@@ -1,107 +1,123 @@
 <script lang="ts">
-  type AnswerStatus = 'neutral' | 'correct' | 'incorrect';
-  
-  let { isLoading = false, answerStatus = 'neutral' as AnswerStatus } = $props();
-  
-  // Track mouse position
-  let mouseX = $state(0);
-  let mouseY = $state(0);
-  
-  // Container for reference position
-  let container: HTMLDivElement;
-  
-  // Movement limits and smoothing
-  const movementLimit = 5;
-  const transitionDuration = "0.3s";
-  
-  // Smoothing function for more natural movement
-  function smoothValue(value: number): number {
+type AnswerStatus = "neutral" | "correct" | "incorrect";
+
+let { isLoading = false, answerStatus = "neutral" as AnswerStatus } = $props();
+
+// Track mouse position
+let mouseX = $state(0);
+let mouseY = $state(0);
+
+// Container for reference position
+let container: HTMLDivElement;
+
+// Movement limits and smoothing
+const movementLimit = 5;
+const transitionDuration = "0.3s";
+
+// Smoothing function for more natural movement
+function smoothValue(value: number): number {
     // Cubic easing function - smoother than linear
     return value * value * value;
-  }
-  
-  // Handle global mouse movement
-  function handleGlobalMouseMove(event: MouseEvent) {
+}
+
+// Handle global mouse movement
+function handleGlobalMouseMove(event: MouseEvent) {
     if (isLoading || !container) return;
-    
+
     // Get container dimensions
     const rect = container.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    
+
     // Calculate normalized position (-1 to 1)
     const rawX = (event.clientX - centerX) / (rect.width / 2);
     const rawY = (event.clientY - centerY) / (rect.height / 2);
-    
+
     // Clamp values between -1 and 1
     const clampedX = Math.max(-1, Math.min(1, rawX));
     const clampedY = Math.max(-1, Math.min(1, rawY));
-    
+
     // Apply smoothing
     mouseX = smoothValue(clampedX);
     mouseY = smoothValue(clampedY);
-  }
-  
-  // Set up global mouse move listener
-  $effect(() => {
-    window.addEventListener('mousemove', handleGlobalMouseMove);
+}
+
+// Set up global mouse move listener
+$effect(() => {
+    window.addEventListener("mousemove", handleGlobalMouseMove);
     return () => {
-      window.removeEventListener('mousemove', handleGlobalMouseMove);
+        window.removeEventListener("mousemove", handleGlobalMouseMove);
     };
-  });
-  
-  // Animation classes based on answer status
-  let containerClass = $derived(
-    answerStatus === 'correct' ? 'animate-success' :
-    answerStatus === 'incorrect' ? 'animate-failure' : 
-    ''
-  );
-  
-  // Eye shapes based on answer status
-  let eyePathLeft = $derived(
-    answerStatus === 'correct' ? 
-      // Happy eye (upward arc)
-      "M32.4627 115.093 A18.1439 18.1439 0 0 0 68.7505 115.093" :
-    answerStatus === 'incorrect' ? 
-      // Sad eye (downward arc)
-      "M32.4627 115.093 A18.1439 18.1439 0 0 1 68.7505 115.093" :
-    ''
-  );
-  
-  let eyePathRight = $derived(
-    answerStatus === 'correct' ? 
-      // Happy eye (upward arc)
-      "M89.3796 113.872 A13.7894 13.7894 0 0 0 116.9584 113.872" :
-    answerStatus === 'incorrect' ? 
-      // Sad eye (downward arc)
-      "M89.3796 113.872 A13.7894 13.7894 0 0 1 116.9584 113.872" :
-    ''
-  );
-  
-  // Eye colors based on answer status
-  let eyeColor = $derived(
-    answerStatus === 'correct' ? '#FFD700' : // Brighter gold
-    answerStatus === 'incorrect' ? '#E6B800' : // Darker gold
-    '#FBBF24' // Default color
-  );
-  
-  // Calculate styles with transitions
-  // Head moves slightly
-  let headStyle = $derived(`transform: translate(${mouseX * 2}px, ${mouseY * 2}px); transition: transform ${transitionDuration} ease-out;`);
-  
-  // Eyes move more than the head
-  let leftEyeStyle = $derived(`transform: translate(${mouseX * movementLimit}px, ${mouseY * movementLimit}px); transition: transform ${transitionDuration} ease-out;`);
-  let rightEyeStyle = $derived(`transform: translate(${mouseX * movementLimit}px, ${mouseY * movementLimit}px); transition: transform ${transitionDuration} ease-out;`);
-  
-  // Antenna rotates based on mouse position
-  let antennaStyle = $derived(`transform: rotate(${mouseX * 3}deg); transition: transform ${transitionDuration} ease-out;`);
-  
-  // Compute glow classes
-  let glowClass = $derived(
-    answerStatus === 'correct' ? 'glow-success' :
-    answerStatus === 'incorrect' ? 'glow-failure' :
-    ''
-  );
+});
+
+// Animation classes based on answer status
+let containerClass = $derived(
+    answerStatus === "correct"
+        ? "animate-success"
+        : answerStatus === "incorrect"
+          ? "animate-failure"
+          : "",
+);
+
+// Eye shapes based on answer status
+let eyePathLeft = $derived(
+    answerStatus === "correct"
+        ? // Happy eye (upward arc)
+          "M32.4627 115.093 A18.1439 18.1439 0 0 0 68.7505 115.093"
+        : answerStatus === "incorrect"
+          ? // Sad eye (downward arc)
+            "M32.4627 115.093 A18.1439 18.1439 0 0 1 68.7505 115.093"
+          : "",
+);
+
+let eyePathRight = $derived(
+    answerStatus === "correct"
+        ? // Happy eye (upward arc)
+          "M89.3796 113.872 A13.7894 13.7894 0 0 0 116.9584 113.872"
+        : answerStatus === "incorrect"
+          ? // Sad eye (downward arc)
+            "M89.3796 113.872 A13.7894 13.7894 0 0 1 116.9584 113.872"
+          : "",
+);
+
+// Eye colors based on answer status
+let eyeColor = $derived(
+    answerStatus === "correct"
+        ? "#FFD700"
+        : // Brighter gold
+          answerStatus === "incorrect"
+          ? "#E6B800"
+          : // Darker gold
+            "#FBBF24", // Default color
+);
+
+// Calculate styles with transitions
+// Head moves slightly
+let headStyle = $derived(
+    `transform: translate(${mouseX * 2}px, ${mouseY * 2}px); transition: transform ${transitionDuration} ease-out;`,
+);
+
+// Eyes move more than the head
+let leftEyeStyle = $derived(
+    `transform: translate(${mouseX * movementLimit}px, ${mouseY * movementLimit}px); transition: transform ${transitionDuration} ease-out;`,
+);
+let rightEyeStyle = $derived(
+    `transform: translate(${mouseX * movementLimit}px, ${mouseY * movementLimit}px); transition: transform ${transitionDuration} ease-out;`,
+);
+
+// Antenna rotates based on mouse position
+let antennaStyle = $derived(
+    `transform: rotate(${mouseX * 3}deg); transition: transform ${transitionDuration} ease-out;`,
+);
+
+// Compute glow classes
+let glowClass = $derived(
+    answerStatus === "correct"
+        ? "glow-success"
+        : answerStatus === "incorrect"
+          ? "glow-failure"
+          : "",
+);
 </script>
 
 <style>
@@ -165,6 +181,13 @@
     20% { opacity: 1; transform: translateY(0); }
     80% { opacity: 1; transform: translateY(0); }
     100% { opacity: 0; transform: translateY(-10px); }
+  }
+
+  @media (max-width: 768px) {
+    svg {
+      width: 78px;
+      height: 99ox;
+    }
   }
 </style>
 

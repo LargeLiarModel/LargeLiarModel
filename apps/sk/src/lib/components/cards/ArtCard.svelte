@@ -3,6 +3,31 @@ import Button from "../ui/button/button.svelte";
 import LoadingSpinner from "../ui/LoadingSpinner.svelte";
 import type { Question } from "$lib/game/Question.svelte";
 import { ArrowRight } from "@lucide/svelte";
+import { handle } from "hono/cloudflare-pages";
+
+import { onMount } from "svelte";
+
+let isSmallScreen = false;
+
+onMount(() => {
+    // Check if we're in the browser environment
+    if (typeof window !== "undefined") {
+        // Set initial value
+        isSmallScreen = window.innerWidth < 768; // adjust breakpoint as needed
+
+        // Add resize listener
+        const handleResize = () => {
+            isSmallScreen = window.innerWidth < 768;
+        };
+
+        window.addEventListener("resize", handleResize);
+
+        // Clean up listener on component destroy
+        return () => {
+            window.removeEventListener("resize", handleResize);
+        };
+    }
+});
 
 let { currentQuestion, setAnswer } = $props();
 
@@ -13,6 +38,9 @@ let guess = false;
 let handleAnswer = (answer: boolean) => {
     guess = answer;
     answered = true;
+    if (isSmallScreen) {
+        handleGuess(guess);
+    }
 };
 
 let handleGuess = (guess: boolean) => {
@@ -23,7 +51,7 @@ let handleGuess = (guess: boolean) => {
 
 <div class="bg-white flex flex-col justify-center items-center p-10 rounded">
   {#if currentQuestion?.content}
-    <h1 class="text-4xl font-bold mb-2">Is this real art?</h1>
+    <h1 class="text-xl md:text-4xl font-bold mb-2">Is this real art?</h1>
     <div class="flex flex-col m-2 w-full h-100">    
       <div class="flex flex-row justify-center w-full">
         <div class="flex flex-col {answered ? "m-4" : ""} items-center">
@@ -49,7 +77,7 @@ let handleGuess = (guess: boolean) => {
       </div>
       {#if answered}
       <Button class="m-5" onclick={() => handleGuess(guess)}>Next Question <ArrowRight /></Button>
-      {/if}
+      {:else}
 
 
       <div class="flex flex-row justify-center gap-4 mt-4 w-full">
@@ -61,6 +89,7 @@ let handleGuess = (guess: boolean) => {
           AI-GENERATED
         </Button>
       </div>
+      {/if}
     </div>
   {:else}
   <LoadingSpinner />
