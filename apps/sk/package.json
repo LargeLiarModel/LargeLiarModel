@@ -5,7 +5,8 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "vite build",
+		"build": "tsc -p server/tsconfig.json && vite build && npm run build:server",
+		"build:server": "mkdir -p .svelte-kit/output/server && cp -r server/* .svelte-kit/output/server/",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -37,8 +38,11 @@
 	},
 	"dependencies": {
 		"@biomejs/biome": "^2.0.0-beta.1",
-		"@libsql/client": "^0.14.0",
-		"drizzle-orm": "^0.40.0",
-		"hono": "^4.7.5"
+		"@google/genai": "^0.7.0",
+		"@google/generative-ai": "^0.24.0",
+		"@libsql/client": "^0.15.1",
+		"drizzle-orm": "^0.41.0",
+		"hono": "^4.7.5",
+		"zod": "^3.24.2"
 	}
 }

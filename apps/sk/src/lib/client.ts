@@ -1,6 +1,6 @@
-// Use absolute imports to avoid path resolution issues
-import { hcWithType } from "../../../hono-api/src/client";
-import type { AppType } from "../../../hono-api/src/app";
+// Import from the local server directory
+import { hcWithType } from "../../server/client";
+import type { AppType } from "../../server/app";
 import { hc } from "hono/client";
 
 // Handle client side and server side conditions

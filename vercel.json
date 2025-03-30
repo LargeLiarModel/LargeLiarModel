@@ -1,24 +1,11 @@
 {
   "version": 2,
-  "buildCommand": "cd apps/hono-api && npm install && npm run build && cd ../../apps/sk && npm install && npm run build",
+  "buildCommand": "cd apps/sk && npm install && npm run build",
   "outputDirectory": "apps/sk/.svelte-kit/output",
-  "builds": [
-    {
-      "src": "apps/sk/package.json",
-      "use": "@sveltejs/adapter-vercel"
-    },
-    {
-      "src": "apps/hono-api/package.json",
-      "use": "@vercel/node",
-      "config": {
-        "entrypoint": "dist/index.js"
-      }
-    }
-  ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "apps/hono-api/dist/index.js"
+      "dest": "apps/sk/.svelte-kit/output/server/index.js"
     },
     {
       "handle": "filesystem"

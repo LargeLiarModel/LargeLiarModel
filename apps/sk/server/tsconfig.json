@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "jsx": "react-jsx",
+        "jsxImportSource": "hono/jsx",
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "outDir": "../.svelte-kit/output/server",
+        "rootDir": ".",
+        "preserveValueImports": false,
+        "isolatedModules": false,
+        "importsNotUsedAsValues": "remove",
+        "resolveJsonModule": true
+    },
+    "include": ["./**/*"],
+    "exclude": ["node_modules"]
+}

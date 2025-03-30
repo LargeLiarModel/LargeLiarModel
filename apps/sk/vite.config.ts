@@ -6,7 +6,7 @@ export default defineConfig({
 	plugins: [sveltekit()],
 	resolve: {
 		alias: {
-			'../../../hono-api/src': resolve(__dirname, '../hono-api/src')
+			'../../server': resolve(__dirname, './server')
 		}
 	},
 	server: {
